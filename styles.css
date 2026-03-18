@@ -573,6 +573,31 @@ sup a {
 }
 
 @media (max-width: 720px) {
+  .content-grid {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar {
+    display: contents;
+  }
+
+  .page-list-panel {
+    order: 1;
+  }
+
+  .main-column {
+    order: 2;
+  }
+
+  .theme-panel {
+    order: 3;
+  }
+
+  .recent-panel {
+    order: 4;
+  }
+
   .app-shell {
     width: min(100% - 16px, 100%);
     padding-top: 10px;
