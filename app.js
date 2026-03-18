@@ -62,6 +62,7 @@
     mode: "view",
     searchTerm: "",
     themeId: null,
+    showSuggestions: false,
   };
 
   const elements = {
@@ -74,6 +75,7 @@
     editorSummary: document.getElementById("editor-summary"),
     editorTextarea: document.getElementById("editor-textarea"),
     searchInput: document.getElementById("search-input"),
+    searchSuggestions: document.getElementById("search-suggestions"),
     tocList: document.getElementById("toc-list"),
     heroPageName: document.getElementById("hero-page-name"),
     heroUpdatedAt: document.getElementById("hero-updated-at"),
@@ -142,7 +144,21 @@
   function bindEvents() {
     elements.searchInput.addEventListener("input", (event) => {
       state.searchTerm = event.target.value.trim().toLowerCase();
-      renderPageList();
+      state.showSuggestions = Boolean(state.searchTerm);
+      renderSearchSuggestions();
+    });
+
+    elements.searchInput.addEventListener("focus", () => {
+      state.showSuggestions = Boolean(state.searchTerm);
+      renderSearchSuggestions();
+    });
+
+    document.addEventListener("click", (event) => {
+      const searchBox = elements.searchInput.closest(".searchbox");
+      if (searchBox && !searchBox.contains(event.target)) {
+        state.showSuggestions = false;
+        renderSearchSuggestions();
+      }
     });
 
     elements.viewModeButton.addEventListener("click", () => setMode("view"));
@@ -208,12 +224,13 @@
   function renderApp() {
     renderPageList();
     renderRecentChanges();
+    renderSearchSuggestions();
     renderCurrentPage();
     syncModeButtons();
   }
 
   function renderPageList() {
-    const pages = getFilteredPages();
+    const pages = state.pages;
     elements.pageCountBadge.textContent = `${pages.length}개`;
     elements.pageList.innerHTML = "";
 
@@ -266,6 +283,36 @@
       });
       elements.themeSelector.appendChild(button);
     });
+  }
+
+  function renderSearchSuggestions() {
+    const suggestions = getSearchSuggestions();
+    elements.searchSuggestions.innerHTML = "";
+
+    if (!state.showSuggestions || !suggestions.length) {
+      elements.searchSuggestions.hidden = true;
+      return;
+    }
+
+    suggestions.forEach((page) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.innerHTML = `
+        <strong>${escapeHtml(page.title)}</strong>
+        <small>${escapeHtml(page.category || "문서")} · ${escapeHtml(page.summary || "")}</small>
+      `;
+      button.addEventListener("click", () => {
+        state.currentPageId = page.id;
+        state.showSuggestions = false;
+        elements.searchInput.value = page.title;
+        state.searchTerm = page.title.toLowerCase();
+        setMode("view");
+        renderApp();
+      });
+      elements.searchSuggestions.appendChild(button);
+    });
+
+    elements.searchSuggestions.hidden = false;
   }
 
   function renderRecentChanges() {
@@ -431,15 +478,37 @@
     return state.pages.find((page) => page.id === state.currentPageId) || state.pages[0] || null;
   }
 
-  function getFilteredPages() {
+  function getSearchSuggestions() {
     if (!state.searchTerm) {
-      return state.pages;
+      return [];
     }
 
-    return state.pages.filter((page) => {
-      const target = `${page.title} ${page.summary} ${page.content}`.toLowerCase();
-      return target.includes(state.searchTerm);
-    });
+    const query = state.searchTerm;
+
+    return [...state.pages]
+      .map((page) => {
+        const title = page.title.toLowerCase();
+        let score = 0;
+
+        if (title === query) {
+          score += 100;
+        }
+        if (title.startsWith(query)) {
+          score += 60;
+        }
+        if (title.includes(query)) {
+          score += 30;
+        }
+        if ((page.summary || "").toLowerCase().includes(query)) {
+          score += 10;
+        }
+
+        return { page, score };
+      })
+      .filter((item) => item.score > 0)
+      .sort((a, b) => b.score - a.score || a.page.title.localeCompare(b.page.title, "ko"))
+      .slice(0, 5)
+      .map((item) => item.page);
   }
 
   function resolveInitialPageId() {

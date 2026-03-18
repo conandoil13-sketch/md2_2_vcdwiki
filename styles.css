@@ -115,6 +115,7 @@ button {
 }
 
 .searchbox {
+  position: relative;
   display: grid;
   gap: 8px;
   min-width: min(100%, 320px);
@@ -227,6 +228,46 @@ button {
 .theme-selector {
   display: grid;
   gap: 10px;
+}
+
+.search-suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 80;
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 251, 246, 0.96);
+  box-shadow: 0 18px 40px rgba(48, 35, 18, 0.15);
+  backdrop-filter: blur(14px);
+}
+
+.search-suggestions button {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+}
+
+.search-suggestions button:hover {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.search-suggestions strong,
+.search-suggestions small {
+  display: block;
+}
+
+.search-suggestions small {
+  color: var(--muted);
 }
 
 .theme-chip {
@@ -600,7 +641,7 @@ sup a {
 
   .app-shell {
     width: min(100% - 16px, 100%);
-    padding-top: 10px;
+    padding-top: 8px;
   }
 
   .topbar,
@@ -612,9 +653,48 @@ sup a {
     border-radius: 22px;
   }
 
+  .topbar {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding: 10px 12px;
+  }
+
+  .brand-block,
+  .create-page-button-mobile-hidden,
+  #create-page-button {
+    display: none;
+  }
+
+  .topbar-actions {
+    justify-content: stretch;
+  }
+
+  .searchbox {
+    min-width: 100%;
+    gap: 0;
+  }
+
+  .searchbox > span {
+    display: none;
+  }
+
   .action-buttons,
   .editor-actions {
     grid-template-columns: 1fr;
+  }
+
+  .article-layout {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .toc-panel {
+    order: 1;
+  }
+
+  .article-panel {
+    order: 2;
   }
 
   .editor-actions {
