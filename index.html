@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>국민대학교 시각디자인학과 위키 프로토타입</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-block">
+          <p class="eyebrow">Prototype Archive</p>
+          <h1>국민대학교 시각디자인학과 위키</h1>
+          <p class="brand-copy">
+            나무위키형 탐색성과 위키백과형 구조감을 함께 테스트하는 프로토타입
+          </p>
+        </div>
+
+        <div class="topbar-actions">
+          <label class="searchbox" for="search-input">
+            <span>문서 찾기</span>
+            <input id="search-input" type="search" placeholder="예: 타이포그래피 스튜디오" />
+          </label>
+          <button id="create-page-button" class="ghost-button" type="button">새 문서</button>
+        </div>
+      </header>
+
+      <div class="content-grid">
+        <aside class="sidebar">
+          <section class="panel">
+            <div class="panel-heading">
+              <h2>학생회 테마</h2>
+            </div>
+            <p class="theme-copy">
+              역대 학생회 테마색을 눌러 위키 전체 분위기를 바로 바꿔볼 수 있습니다.
+            </p>
+            <div id="theme-selector" class="theme-selector" aria-label="학생회 테마 선택"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <h2>문서 목록</h2>
+              <span id="page-count-badge" class="badge"></span>
+            </div>
+            <nav id="page-list" class="page-list" aria-label="문서 목록"></nav>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <h2>최근 변경</h2>
+            </div>
+            <ul id="recent-changes" class="recent-list"></ul>
+          </section>
+        </aside>
+
+        <main class="main-column">
+          <section class="hero-card">
+            <div>
+              <p class="hero-label">Visual Design Community Draft</p>
+              <h2 id="hero-title">학과 안의 지식을 함께 쌓는 실험</h2>
+              <p id="hero-description">
+                서버 없이도 문서 구조, 편집 경험, 모바일 대응을 미리 검증할 수 있도록 만든
+                테스트 버전입니다.
+              </p>
+            </div>
+            <div class="hero-meta">
+              <div>
+                <span>현재 문서</span>
+                <strong id="hero-page-name">-</strong>
+              </div>
+              <div>
+                <span>마지막 수정</span>
+                <strong id="hero-updated-at">-</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="wiki-frame">
+            <div class="article-actions">
+              <div class="article-path" id="article-path">문서</div>
+              <div class="action-buttons">
+                <button id="view-mode-button" class="mode-button is-active" type="button">
+                  보기
+                </button>
+                <button id="edit-mode-button" class="mode-button" type="button">편집</button>
+                <button id="preview-mode-button" class="mode-button" type="button">미리보기</button>
+                <button id="reset-storage-button" class="ghost-button" type="button">
+                  로컬 편집 초기화
+                </button>
+              </div>
+            </div>
+
+            <div class="article-layout">
+              <article class="article-panel">
+                <div id="article-view" class="article-view"></div>
+
+                <section id="editor-panel" class="editor-panel" hidden>
+                  <div class="editor-toolbar" aria-label="편집 매크로">
+                    <button class="macro-button" type="button" data-macro="heading-2">큰 제목</button>
+                    <button class="macro-button" type="button" data-macro="heading-3">작은 제목</button>
+                    <button class="macro-button" type="button" data-macro="bold">굵게</button>
+                    <button class="macro-button" type="button" data-macro="link">문서 링크</button>
+                    <button class="macro-button" type="button" data-macro="list">목록</button>
+                    <button class="macro-button" type="button" data-macro="footnote">주석</button>
+                    <button class="macro-button" type="button" data-macro="image">이미지</button>
+                  </div>
+
+                  <div class="editor-meta">
+                    <label>
+                      문서 제목
+                      <input id="editor-title" type="text" />
+                    </label>
+                    <label>
+                      설명 한 줄
+                      <input id="editor-summary" type="text" />
+                    </label>
+                  </div>
+
+                  <label class="editor-label" for="editor-textarea">문서 본문</label>
+                  <textarea
+                    id="editor-textarea"
+                    spellcheck="false"
+                    placeholder="여기에 문서를 작성하세요."
+                  ></textarea>
+
+                  <div class="editor-actions">
+                    <button id="save-button" class="primary-button" type="button">로컬에 저장</button>
+                    <button id="copy-code-button" class="ghost-button" type="button">
+                      코드형태로 복사
+                    </button>
+                    <button id="cancel-button" class="ghost-button" type="button">취소</button>
+                  </div>
+                  <p id="copy-feedback" class="copy-feedback" aria-live="polite"></p>
+                </section>
+              </article>
+
+              <aside class="toc-panel">
+                <section class="panel">
+                  <div class="panel-heading">
+                    <h2>목차</h2>
+                  </div>
+                  <nav id="toc-list" class="toc-list" aria-label="목차"></nav>
+                </section>
+
+                <section class="panel notice-panel">
+                  <div class="panel-heading">
+                    <h2>프로토타입 안내</h2>
+                  </div>
+                  <p>
+                    데이터 원본은 <code>data/wikiData.js</code>에 있습니다. 지금 편집해 저장하면
+                    브라우저 로컬 저장소에만 반영되고, 나중에 서버를 만들 때는 가짜 API 부분만
+                    교체하면 됩니다.
+                  </p>
+                </section>
+              </aside>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <script src="./data/wikiData.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
