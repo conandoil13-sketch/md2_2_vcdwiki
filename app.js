@@ -142,6 +142,20 @@
   }
 
   function bindEvents() {
+    document.addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (!button) {
+        return;
+      }
+
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "custom_click",
+        button_name: button.innerText.trim(),
+        page_path: window.location.pathname,
+      });
+    });
+
     elements.searchInput.addEventListener("input", (event) => {
       state.searchTerm = event.target.value.trim().toLowerCase();
       state.showSuggestions = Boolean(state.searchTerm);
