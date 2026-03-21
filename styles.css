@@ -13,10 +13,10 @@
   --muted: #6f604e;
   --accent: #af3f2f;
   --accent-soft: rgba(175, 63, 47, 0.12);
-  --shadow: 0 18px 44px rgba(64, 45, 17, 0.1);
-  --radius-xl: 28px;
-  --radius-lg: 20px;
-  --radius-md: 14px;
+  --shadow: 0 12px 30px rgba(64, 45, 17, 0.08);
+  --radius-xl: 22px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
   --topbar-height: 0px;
 }
 
@@ -56,19 +56,16 @@ button {
 .app-shell {
   width: min(1480px, calc(100% - 24px));
   margin: 0 auto;
-  padding: 18px 0 32px;
+  padding: 14px 0 24px;
 }
 
 .topbar {
   position: sticky;
   top: 0;
   z-index: 50;
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 20px;
-  align-items: end;
-  margin-bottom: 20px;
-  padding: 20px;
+  display: block;
+  margin-bottom: 14px;
+  padding: 12px 16px;
   background: rgba(248, 242, 233, 0.88);
   backdrop-filter: blur(18px);
   border: 1px solid rgba(92, 68, 33, 0.12);
@@ -106,19 +103,20 @@ button {
   color: var(--muted);
 }
 
-.topbar-actions {
+.utility-bar {
   display: flex;
   gap: 12px;
-  align-items: end;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: flex-start;
   flex-wrap: wrap;
+  margin-bottom: 14px;
 }
 
 .searchbox {
   position: relative;
   display: grid;
   gap: 8px;
-  min-width: min(100%, 320px);
+  width: 100%;
   color: var(--muted);
   font-size: 0.9rem;
 }
@@ -149,6 +147,7 @@ button {
   border: 1px solid var(--line-strong);
   background: rgba(255, 255, 255, 0.68);
   color: var(--text);
+  white-space: nowrap;
   transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
 }
 
@@ -168,8 +167,8 @@ button {
 
 .content-grid {
   display: grid;
-  grid-template-columns: minmax(250px, 300px) minmax(0, 1fr);
-  gap: 20px;
+  grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
+  gap: 14px;
 }
 
 .sidebar,
@@ -179,7 +178,7 @@ button {
 .editor-meta,
 .editor-actions {
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
 .panel,
@@ -194,7 +193,7 @@ button {
 
 .panel,
 .article-panel {
-  padding: 18px;
+  padding: 14px;
 }
 
 .panel-heading,
@@ -228,6 +227,88 @@ button {
 .theme-selector {
   display: grid;
   gap: 10px;
+}
+
+.page-browser-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+}
+
+.page-browser-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(28, 20, 10, 0.38);
+  backdrop-filter: blur(8px);
+}
+
+.page-browser-sheet {
+  position: relative;
+  z-index: 1;
+  width: min(720px, calc(100% - 32px));
+  max-height: min(82vh, 920px);
+  margin: 48px auto;
+  padding: 24px;
+  overflow: hidden;
+  display: grid;
+  gap: 16px;
+  background: rgba(255, 250, 243, 0.96);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  box-shadow: 0 30px 80px rgba(39, 28, 11, 0.2);
+}
+
+.intro-modal {
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.intro-modal .page-browser-sheet {
+  width: min(640px, calc(100% - 32px));
+  max-height: min(72vh, 760px);
+  margin: 0;
+}
+
+.page-browser-header,
+.page-browser-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.page-browser-header h2 {
+  margin: 0;
+  font-family: "IBM Plex Serif", serif;
+  font-size: clamp(1.5rem, 2.4vw, 2.1rem);
+}
+
+.page-browser-copy,
+.page-filter-label {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+.page-filter-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter-chip {
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--text);
+}
+
+.filter-chip.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff7f2;
 }
 
 .search-suggestions {
@@ -324,8 +405,12 @@ button {
   gap: 8px;
 }
 
+.toc-list {
+  gap: 2px;
+}
+
 .page-list {
-  max-height: 420px;
+  max-height: 46vh;
   overflow-y: auto;
   padding-right: 6px;
 }
@@ -349,6 +434,12 @@ button {
   color: inherit;
   text-align: left;
   text-decoration: none;
+}
+
+.toc-list a {
+  padding: 4px 8px;
+  line-height: 1.35;
+  border-radius: 10px;
 }
 
 .page-list button:hover,
@@ -381,6 +472,15 @@ button {
   font-weight: 700;
 }
 
+.recent-change-button {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
 .recent-list span {
   display: block;
   margin-top: 3px;
@@ -390,13 +490,13 @@ button {
 
 .hero-card,
 .wiki-frame {
-  padding: 22px;
+  padding: 16px;
 }
 
 .hero-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 20px;
+  gap: 14px;
   align-items: end;
 }
 
@@ -410,8 +510,8 @@ button {
 }
 
 .hero-meta div {
-  padding: 14px;
-  border-radius: 18px;
+  padding: 10px 12px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.68);
   border: 1px solid var(--line);
 }
@@ -425,12 +525,12 @@ button {
 
 .wiki-frame {
   display: grid;
-  gap: 18px;
+  gap: 12px;
 }
 
 .action-buttons {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
@@ -452,19 +552,19 @@ button {
 
 .meta-box {
   display: flex;
-  gap: 18px;
+  gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 24px;
-  padding: 14px 16px;
-  border-radius: 18px;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.62);
   border: 1px solid var(--line);
 }
 
 .article-view h2,
 .article-view h3 {
-  margin-top: 1.9em;
-  margin-bottom: 0.7em;
+  margin-top: 1.4em;
+  margin-bottom: 0.45em;
   scroll-margin-top: 110px;
 }
 
@@ -472,7 +572,7 @@ button {
 .article-view ul,
 .article-view ol,
 .article-view blockquote {
-  margin: 0 0 1em;
+  margin: 0 0 0.8em;
 }
 
 .article-view ul,
@@ -525,12 +625,12 @@ button {
   position: sticky;
   top: 120px;
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
 .editor-panel {
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
 .editor-toolbar {
@@ -540,9 +640,9 @@ button {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  padding: 12px;
+  padding: 10px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 14px;
   background: rgba(255, 250, 243, 0.92);
   backdrop-filter: blur(12px);
 }
@@ -561,7 +661,7 @@ button {
 
 #editor-textarea {
   min-height: 52vh;
-  padding: 18px;
+  padding: 14px;
   resize: vertical;
   line-height: 1.7;
 }
@@ -578,11 +678,11 @@ button {
 }
 
 .empty-state {
-  padding: 34px 18px;
+  padding: 22px 14px;
   text-align: center;
   color: var(--muted);
   border: 1px dashed var(--line-strong);
-  border-radius: 18px;
+  border-radius: 14px;
 }
 
 .notice-panel p {
@@ -598,8 +698,7 @@ sup a {
 @media (max-width: 1120px) {
   .content-grid,
   .article-layout,
-  .hero-card,
-  .topbar {
+  .hero-card {
     grid-template-columns: 1fr;
   }
 
@@ -649,29 +748,16 @@ sup a {
   .wiki-frame,
   .panel,
   .article-panel {
-    padding: 16px;
-    border-radius: 22px;
+    padding: 14px;
+    border-radius: 18px;
   }
 
   .topbar {
-    grid-template-columns: 1fr;
-    gap: 8px;
     margin-bottom: 14px;
     padding: 10px 12px;
   }
 
-  .brand-block,
-  .create-page-button-mobile-hidden,
-  #create-page-button {
-    display: none;
-  }
-
-  .topbar-actions {
-    justify-content: stretch;
-  }
-
   .searchbox {
-    min-width: 100%;
     gap: 0;
   }
 
@@ -679,9 +765,53 @@ sup a {
     display: none;
   }
 
+  .utility-bar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .utility-bar .ghost-button {
+    min-width: 0;
+    padding: 0 8px;
+    font-size: 0.9rem;
+  }
+
   .action-buttons,
   .editor-actions {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .article-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .action-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+
+  .page-browser-sheet {
+    width: min(100% - 16px, 100%);
+    max-height: calc(100vh - 20px);
+    margin: 10px auto;
+    padding: 16px;
+    border-radius: 22px;
+  }
+
+  .page-browser-header,
+  .page-browser-meta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .intro-modal .page-browser-sheet {
+    width: min(100% - 8px, 100%);
+    margin: 0;
   }
 
   .article-layout {
@@ -701,10 +831,16 @@ sup a {
     display: grid;
   }
 
-  .ghost-button,
   .mode-button,
   .primary-button {
     width: 100%;
+  }
+
+  .action-buttons .mode-button {
+    min-width: 0;
+    min-height: 40px;
+    padding: 0 8px;
+    font-size: 0.9rem;
   }
 
   .editor-toolbar {

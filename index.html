@@ -48,44 +48,21 @@
     <!-- End Google Tag Manager (noscript) -->
     <div class="app-shell">
       <header class="topbar">
-        <div class="brand-block">
-          <p class="eyebrow">Prototype Archive</p>
-          <h1>국민대학교 시각디자인학과 위키</h1>
-          <p class="brand-copy">
-            나무위키형 탐색성과 위키백과형 구조감을 함께 테스트하는 프로토타입
-          </p>
-        </div>
-
-        <div class="topbar-actions">
-          <label class="searchbox" for="search-input">
-            <span>문서 찾기</span>
-            <input id="search-input" type="search" placeholder="예: 타이포그래피 스튜디오" />
-            <div id="search-suggestions" class="search-suggestions" hidden></div>
-          </label>
-          <button id="create-page-button" class="ghost-button" type="button">새 문서</button>
-        </div>
+        <label class="searchbox" for="search-input">
+          <span>문서 찾기</span>
+          <input id="search-input" type="search" placeholder="예: 타이포그래피 스튜디오" />
+          <div id="search-suggestions" class="search-suggestions" hidden></div>
+        </label>
       </header>
+
+      <div class="utility-bar">
+        <button id="create-page-button" class="ghost-button" type="button">새 문서</button>
+        <button id="browse-pages-button" class="ghost-button" type="button">문서 둘러보기</button>
+        <button id="theme-modal-button" class="ghost-button" type="button">테마 변경</button>
+      </div>
 
       <div class="content-grid">
         <aside class="sidebar">
-          <section class="panel page-list-panel">
-            <div class="panel-heading">
-              <h2>문서 목록</h2>
-              <span id="page-count-badge" class="badge"></span>
-            </div>
-            <nav id="page-list" class="page-list" aria-label="문서 목록"></nav>
-          </section>
-
-          <section class="panel theme-panel">
-            <div class="panel-heading">
-              <h2>학생회 테마</h2>
-            </div>
-            <p class="theme-copy">
-              역대 학생회 테마색을 눌러 위키 전체 분위기를 바로 바꿔볼 수 있습니다.
-            </p>
-            <div id="theme-selector" class="theme-selector" aria-label="학생회 테마 선택"></div>
-          </section>
-
           <section class="panel recent-panel">
             <div class="panel-heading">
               <h2>최근 변경</h2>
@@ -125,9 +102,6 @@
                 </button>
                 <button id="edit-mode-button" class="mode-button" type="button">편집</button>
                 <button id="preview-mode-button" class="mode-button" type="button">미리보기</button>
-                <button id="reset-storage-button" class="ghost-button" type="button">
-                  로컬 편집 초기화
-                </button>
               </div>
             </div>
 
@@ -182,22 +156,72 @@
                   </div>
                   <nav id="toc-list" class="toc-list" aria-label="목차"></nav>
                 </section>
-
-                <section class="panel notice-panel">
-                  <div class="panel-heading">
-                    <h2>프로토타입 안내</h2>
-                  </div>
-                  <p>
-                    데이터 원본은 <code>data/wikiData.js</code>에 있습니다. 지금 편집해 저장하면
-                    브라우저 로컬 저장소에만 반영되고, 나중에 서버를 만들 때는 가짜 API 부분만
-                    교체하면 됩니다.
-                  </p>
-                </section>
               </aside>
             </div>
           </section>
         </main>
       </div>
+    </div>
+
+    <!-- 정식 출시 시 이 프로토타입 안내 모달 전체를 삭제하면 됩니다. -->
+    <div id="intro-modal" class="page-browser-modal intro-modal" hidden>
+      <div id="intro-backdrop" class="page-browser-backdrop"></div>
+      <section class="page-browser-sheet" aria-label="프로토타입 안내">
+        <div class="page-browser-header">
+          <div>
+            <p class="eyebrow">Prototype Notice</p>
+            <h2>프로토타입 안내</h2>
+            <p class="page-browser-copy">
+              데이터 원본은 <code>data/wikiData.js</code>에 있습니다. 지금 편집해 저장하면
+              브라우저 로컬 저장소에만 반영되고, 나중에 서버를 만들 때는 가짜 API 부분만 교체하면
+              됩니다.
+            </p>
+          </div>
+          <button id="close-intro-modal-button" class="ghost-button" type="button">확인</button>
+        </div>
+      </section>
+    </div>
+
+    <div id="page-browser-modal" class="page-browser-modal" hidden>
+      <div id="page-browser-backdrop" class="page-browser-backdrop"></div>
+      <section class="page-browser-sheet" aria-label="문서 둘러보기">
+        <div class="page-browser-header">
+          <div>
+            <p class="eyebrow">Browse Archive</p>
+            <h2>문서 둘러보기</h2>
+            <p class="page-browser-copy">
+              타입별로 가볍게 훑어보면서 원하는 문서를 찾을 수 있게 구성했습니다.
+            </p>
+          </div>
+          <button id="close-page-browser-button" class="ghost-button" type="button">닫기</button>
+        </div>
+
+        <div id="page-filter-list" class="page-filter-list" aria-label="문서 타입 필터"></div>
+
+        <div class="page-browser-meta">
+          <span id="page-count-badge" class="badge"></span>
+          <span id="page-filter-label" class="page-filter-label"></span>
+        </div>
+
+        <nav id="page-list" class="page-list" aria-label="문서 목록"></nav>
+      </section>
+    </div>
+
+    <div id="theme-modal" class="page-browser-modal" hidden>
+      <div id="theme-backdrop" class="page-browser-backdrop"></div>
+      <section class="page-browser-sheet" aria-label="테마 변경">
+        <div class="page-browser-header">
+          <div>
+            <p class="eyebrow">Theme Archive</p>
+            <h2>테마 변경</h2>
+            <p class="page-browser-copy">
+              역대 학생회 테마색을 선택해 위키 전체 분위기를 바로 바꿔볼 수 있습니다.
+            </p>
+          </div>
+          <button id="close-theme-modal-button" class="ghost-button" type="button">닫기</button>
+        </div>
+        <div id="theme-selector" class="theme-selector" aria-label="학생회 테마 선택"></div>
+      </section>
     </div>
 
     <script src="./data/wikiData.js"></script>

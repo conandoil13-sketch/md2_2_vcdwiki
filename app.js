@@ -1,6 +1,8 @@
 (function () {
   const STORAGE_KEY = "kmu-vcd-wiki-local-pages";
   const THEME_STORAGE_KEY = "kmu-vcd-wiki-theme";
+  // 정식 출시 시 이 키와 intro modal 관련 로직을 함께 제거하면 됩니다.
+  const INTRO_MODAL_STORAGE_KEY = "kmu-vcd-wiki-intro-seen";
   const THEMES = [
     {
       id: "council-26",
@@ -63,6 +65,10 @@
     searchTerm: "",
     themeId: null,
     showSuggestions: false,
+    isPageBrowserOpen: false,
+    isThemeModalOpen: false,
+    isIntroModalOpen: false,
+    pageFilter: "전체",
   };
 
   const elements = {
@@ -85,12 +91,24 @@
     viewModeButton: document.getElementById("view-mode-button"),
     editModeButton: document.getElementById("edit-mode-button"),
     previewModeButton: document.getElementById("preview-mode-button"),
+    browsePagesButton: document.getElementById("browse-pages-button"),
+    themeModalButton: document.getElementById("theme-modal-button"),
+    closePageBrowserButton: document.getElementById("close-page-browser-button"),
+    pageBrowserModal: document.getElementById("page-browser-modal"),
+    pageBrowserBackdrop: document.getElementById("page-browser-backdrop"),
+    introModal: document.getElementById("intro-modal"),
+    introBackdrop: document.getElementById("intro-backdrop"),
+    closeIntroModalButton: document.getElementById("close-intro-modal-button"),
+    themeModal: document.getElementById("theme-modal"),
+    themeBackdrop: document.getElementById("theme-backdrop"),
+    closeThemeModalButton: document.getElementById("close-theme-modal-button"),
+    pageFilterList: document.getElementById("page-filter-list"),
+    pageFilterLabel: document.getElementById("page-filter-label"),
     createPageButton: document.getElementById("create-page-button"),
     saveButton: document.getElementById("save-button"),
     copyCodeButton: document.getElementById("copy-code-button"),
     cancelButton: document.getElementById("cancel-button"),
     copyFeedback: document.getElementById("copy-feedback"),
-    resetStorageButton: document.getElementById("reset-storage-button"),
     themeSelector: document.getElementById("theme-selector"),
     macroButtons: Array.from(document.querySelectorAll(".macro-button")),
     topbar: document.querySelector(".topbar"),
@@ -135,10 +153,13 @@
     state.themeId = loadThemeId();
     renderThemeSelector();
     applyTheme(state.themeId);
+    state.isIntroModalOpen = shouldShowIntroModal();
 
     state.pages = await fakeWikiApi.fetchPages();
     state.currentPageId = resolveInitialPageId();
     renderApp();
+    // 정적 배포용 URL 동기화입니다. 추후 동적 사이트 전환 시 router push로 교체하면 됩니다.
+    syncUrlWithCurrentPage();
   }
 
   function bindEvents() {
@@ -175,9 +196,30 @@
       }
     });
 
+    // 정적 배포용 hash 라우팅입니다. 추후 동적 사이트 전환 시 라우터 이벤트로 교체하면 됩니다.
+    window.addEventListener("hashchange", () => {
+      const pageId = getPageIdFromHash();
+      if (!pageId || pageId === state.currentPageId || !hasPage(pageId)) {
+        return;
+      }
+
+      state.currentPageId = pageId;
+      setMode("view");
+      renderApp();
+      scrollToTop();
+    });
+
     elements.viewModeButton.addEventListener("click", () => setMode("view"));
     elements.editModeButton.addEventListener("click", () => setMode("edit"));
     elements.previewModeButton.addEventListener("click", () => setMode("preview"));
+    elements.browsePagesButton.addEventListener("click", openPageBrowser);
+    elements.themeModalButton.addEventListener("click", openThemeModal);
+    elements.closePageBrowserButton.addEventListener("click", closePageBrowser);
+    elements.pageBrowserBackdrop.addEventListener("click", closePageBrowser);
+    elements.closeIntroModalButton.addEventListener("click", closeIntroModal);
+    elements.introBackdrop.addEventListener("click", closeIntroModal);
+    elements.closeThemeModalButton.addEventListener("click", closeThemeModal);
+    elements.themeBackdrop.addEventListener("click", closeThemeModal);
 
     elements.createPageButton.addEventListener("click", () => {
       const newPage = createBlankPage();
@@ -213,43 +255,32 @@
       setMode("view");
     });
 
-    elements.resetStorageButton.addEventListener("click", async () => {
-      const confirmed = window.confirm(
-        "브라우저에 저장된 로컬 편집 내용을 초기화할까요? data/wikiData.js 원본은 그대로 남아 있습니다."
-      );
-
-      if (!confirmed) {
-        return;
-      }
-
-      await fakeWikiApi.clearLocalEdits();
-      state.pages = await fakeWikiApi.fetchPages();
-      state.currentPageId = resolveInitialPageId();
-      elements.copyFeedback.textContent = "";
-      setMode("view");
-      renderApp();
-    });
-
     elements.macroButtons.forEach((button) => {
       button.addEventListener("click", () => insertMacro(button.dataset.macro));
     });
   }
 
   function renderApp() {
+    renderPageFilters();
     renderPageList();
     renderRecentChanges();
     renderSearchSuggestions();
     renderCurrentPage();
+    syncPageBrowser();
+    syncIntroModal();
+    syncThemeModal();
     syncModeButtons();
   }
 
   function renderPageList() {
-    const pages = state.pages;
+    const pages = getFilteredBrowsePages();
     elements.pageCountBadge.textContent = `${pages.length}개`;
     elements.pageList.innerHTML = "";
+    elements.pageFilterLabel.textContent =
+      state.pageFilter === "전체" ? "모든 타입의 문서를 둘러보는 중" : `${state.pageFilter} 문서만 보는 중`;
 
     if (!pages.length) {
-      elements.pageList.innerHTML = '<div class="empty-state">검색 결과가 없습니다.</div>';
+      elements.pageList.innerHTML = '<div class="empty-state">이 타입에는 아직 문서가 없습니다.</div>';
       return;
     }
 
@@ -262,10 +293,33 @@
       )}</div>`;
       button.addEventListener("click", () => {
         state.currentPageId = page.id;
+        state.searchTerm = "";
+        elements.searchInput.value = "";
+        closePageBrowser();
         setMode("view");
         renderApp();
+        syncUrlWithCurrentPage();
+        scrollToTop();
       });
       elements.pageList.appendChild(button);
+    });
+  }
+
+  function renderPageFilters() {
+    const filters = ["전체", ...new Set(state.pages.map((page) => page.category || "문서"))];
+    elements.pageFilterList.innerHTML = "";
+
+    filters.forEach((filter) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `filter-chip${filter === state.pageFilter ? " is-active" : ""}`;
+      button.textContent = filter;
+      button.addEventListener("click", () => {
+        state.pageFilter = filter;
+        renderPageFilters();
+        renderPageList();
+      });
+      elements.pageFilterList.appendChild(button);
     });
   }
 
@@ -293,6 +347,7 @@
         state.themeId = theme.id;
         localStorage.setItem(THEME_STORAGE_KEY, theme.id);
         applyTheme(theme.id);
+        closeThemeModal();
         renderThemeSelector();
       });
       elements.themeSelector.appendChild(button);
@@ -322,6 +377,8 @@
         state.searchTerm = page.title.toLowerCase();
         setMode("view");
         renderApp();
+        syncUrlWithCurrentPage();
+        scrollToTop();
       });
       elements.searchSuggestions.appendChild(button);
     });
@@ -334,16 +391,27 @@
       .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)))
       .slice(0, 5);
 
-    elements.recentChanges.innerHTML = pages
-      .map(
-        (page) => `
-          <li>
-            <strong>${escapeHtml(page.title)}</strong>
-            <span>${escapeHtml(page.updatedAt || "-")} · ${escapeHtml(page.summary || "")}</span>
-          </li>
-        `
-      )
-      .join("");
+    elements.recentChanges.innerHTML = "";
+
+    pages.forEach((page) => {
+      const item = document.createElement("li");
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "recent-change-button";
+      button.innerHTML = `
+        <strong>${escapeHtml(page.title)}</strong>
+        <span>${escapeHtml(page.updatedAt || "-")} · ${escapeHtml(page.summary || "")}</span>
+      `;
+      button.addEventListener("click", () => {
+        state.currentPageId = page.id;
+        setMode("view");
+        renderApp();
+        syncUrlWithCurrentPage();
+        scrollToTop();
+      });
+      item.appendChild(button);
+      elements.recentChanges.appendChild(item);
+    });
   }
 
   function renderCurrentPage() {
@@ -443,6 +511,8 @@
         state.currentPageId = pageId;
         setMode("view");
         renderApp();
+        syncUrlWithCurrentPage();
+        scrollToTop();
       });
     });
   }
@@ -525,7 +595,21 @@
       .map((item) => item.page);
   }
 
+  function getFilteredBrowsePages() {
+    if (state.pageFilter === "전체") {
+      return state.pages;
+    }
+
+    return state.pages.filter((page) => (page.category || "문서") === state.pageFilter);
+  }
+
   function resolveInitialPageId() {
+    // 정적 배포용 hash 기반 초기 진입 처리입니다. 추후 동적 사이트 전환 시 path/slug 파싱으로 교체하면 됩니다.
+    const hashPageId = getPageIdFromHash();
+    if (hashPageId && hasPage(hashPageId)) {
+      return hashPageId;
+    }
+
     const homepage = window.WIKI_SEED_DATA.homepage;
     return state.pages.some((page) => page.id === homepage)
       ? homepage
@@ -570,6 +654,84 @@
     textarea.focus();
     const cursor = start + insertText.length;
     textarea.setSelectionRange(cursor, cursor);
+  }
+
+  function openPageBrowser() {
+    state.isPageBrowserOpen = true;
+    state.isThemeModalOpen = false;
+    syncPageBrowser();
+    syncThemeModal();
+  }
+
+  function closePageBrowser() {
+    state.isPageBrowserOpen = false;
+    syncPageBrowser();
+  }
+
+  function syncPageBrowser() {
+    elements.pageBrowserModal.hidden = !state.isPageBrowserOpen;
+    document.body.style.overflow = shouldLockBodyScroll() ? "hidden" : "";
+  }
+
+  function openThemeModal() {
+    state.isThemeModalOpen = true;
+    state.isPageBrowserOpen = false;
+    syncThemeModal();
+    syncPageBrowser();
+  }
+
+  function closeThemeModal() {
+    state.isThemeModalOpen = false;
+    syncThemeModal();
+  }
+
+  function syncThemeModal() {
+    elements.themeModal.hidden = !state.isThemeModalOpen;
+    document.body.style.overflow = shouldLockBodyScroll() ? "hidden" : "";
+  }
+
+  function closeIntroModal() {
+    state.isIntroModalOpen = false;
+    sessionStorage.setItem(INTRO_MODAL_STORAGE_KEY, "true");
+    syncIntroModal();
+  }
+
+  function syncIntroModal() {
+    elements.introModal.hidden = !state.isIntroModalOpen;
+    document.body.style.overflow = shouldLockBodyScroll() ? "hidden" : "";
+  }
+
+  function shouldShowIntroModal() {
+    return sessionStorage.getItem(INTRO_MODAL_STORAGE_KEY) !== "true";
+  }
+
+  function shouldLockBodyScroll() {
+    return state.isPageBrowserOpen || state.isThemeModalOpen || state.isIntroModalOpen;
+  }
+
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function getPageIdFromHash() {
+    // 정적 배포용 해시 라우팅 유틸입니다. 추후 동적 사이트 전환 시 URL path 기반으로 교체하면 됩니다.
+    return decodeURIComponent(window.location.hash.replace(/^#/, "").trim());
+  }
+
+  function syncUrlWithCurrentPage() {
+    // 정적 배포용 URL 반영입니다. 추후 동적 사이트 전환 시 history/router navigation으로 교체하면 됩니다.
+    if (!state.currentPageId) {
+      return;
+    }
+
+    const nextHash = `#${encodeURIComponent(state.currentPageId)}`;
+    if (window.location.hash !== nextHash) {
+      window.history.replaceState(null, "", nextHash);
+    }
+  }
+
+  function hasPage(pageId) {
+    return state.pages.some((page) => page.id === pageId);
   }
 
   function applyTheme(themeId) {
