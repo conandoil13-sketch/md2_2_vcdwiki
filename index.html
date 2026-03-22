@@ -30,7 +30,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
@@ -48,11 +48,14 @@
     <!-- End Google Tag Manager (noscript) -->
     <div class="app-shell">
       <header class="topbar">
-        <label class="searchbox" for="search-input">
-          <span>문서 찾기</span>
-          <input id="search-input" type="search" placeholder="예: 타이포그래피 스튜디오" />
-          <div id="search-suggestions" class="search-suggestions" hidden></div>
-        </label>
+        <div class="topbar-search-row">
+          <div class="topbar-logo" aria-label="시디위키 로고">시디위키</div>
+          <label class="searchbox" for="search-input">
+            <span>문서 찾기</span>
+            <input id="search-input" type="search" placeholder="예: 타이포그래피 스튜디오" />
+            <div id="search-suggestions" class="search-suggestions" hidden></div>
+          </label>
+        </div>
       </header>
 
       <div class="utility-bar">

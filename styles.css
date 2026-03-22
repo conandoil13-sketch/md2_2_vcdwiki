@@ -73,6 +73,30 @@ button {
   box-shadow: var(--shadow);
 }
 
+.topbar-search-row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.topbar-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.52);
+  color: var(--accent);
+  font-family: "Black Han Sans", sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
 .eyebrow,
 .hero-label {
   margin: 0 0 8px;
@@ -755,6 +779,17 @@ sup a {
   .topbar {
     margin-bottom: 14px;
     padding: 10px 12px;
+  }
+
+  .topbar-search-row {
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .topbar-logo {
+    min-height: 44px;
+    padding: 0 8px;
+    font-size: 0.88rem;
   }
 
   .searchbox {
