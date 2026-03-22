@@ -185,6 +185,78 @@
       </section>
     </div>
 
+    <div id="guideline-modal" class="page-browser-modal intro-modal" hidden>
+      <div id="guideline-backdrop" class="page-browser-backdrop"></div>
+      <section class="page-browser-sheet guideline-sheet" aria-label="핵심 커뮤니티 가이드라인">
+        <div class="page-browser-header guideline-header">
+          <div>
+            <p class="eyebrow">Editing Guide</p>
+            <h2>핵심 커뮤니티 가이드라인</h2>
+            <p class="page-browser-copy">
+              첫 편집 전에 꼭 한 번 읽어주세요. 딱딱한 약관 대신, 필요한 카드만 빠르게 펼쳐볼 수
+              있게 준비했어요.
+            </p>
+          </div>
+          <button id="close-guideline-modal-button" class="ghost-button" type="button" data-analytics-skip="true">
+            닫기
+          </button>
+        </div>
+
+        <div class="guideline-card-list">
+          <section class="guideline-card" data-guideline-card="fact">
+            <button id="guideline-card-fact-button" class="guideline-card-toggle" type="button" aria-expanded="false" data-analytics-skip="true">
+              <span>
+                <strong>사실에 기반해 작성해요</strong>
+                <small>확인된 정보 위주로 쓰고, 소문이나 추측은 적지 않습니다.</small>
+              </span>
+              <span class="guideline-card-icon">+</span>
+            </button>
+            <div class="guideline-card-body" hidden>
+              <p><strong>가능:</strong> “이 수업은 팀플 비중이 높아요.”</p>
+              <p><strong>불가:</strong> “교수님이 누구를 더 편애하는 것 같아요.”</p>
+            </div>
+          </section>
+
+          <section class="guideline-card" data-guideline-card="info">
+            <button id="guideline-card-info-button" class="guideline-card-toggle" type="button" aria-expanded="false" data-analytics-skip="true">
+              <span>
+                <strong>사람보다 정보를 중심으로 써요</strong>
+                <small>비방, 조롱, 저격 대신 학과 생활에 도움이 되는 정보 중심으로 작성합니다.</small>
+              </span>
+              <span class="guideline-card-icon">+</span>
+            </button>
+            <div class="guideline-card-body" hidden>
+              <p><strong>가능:</strong> “과제 피드백 속도가 느린 편입니다.”</p>
+              <p><strong>불가:</strong> “OO은 진짜 최악이고 답이 없어요.”</p>
+            </div>
+          </section>
+
+          <section class="guideline-card" data-guideline-card="privacy">
+            <button id="guideline-card-privacy-button" class="guideline-card-toggle" type="button" aria-expanded="false" data-analytics-skip="true">
+              <span>
+                <strong>사생활과 개인정보는 쓰지 않아요</strong>
+                <small>연애, 외모, 성격, 개인정보 등 민감한 내용은 작성할 수 없습니다.</small>
+              </span>
+              <span class="guideline-card-icon">+</span>
+            </button>
+            <div class="guideline-card-body" hidden>
+              <p><strong>가능:</strong> “기자재 대여 절차는 학과실에 문의해야 합니다.”</p>
+              <p><strong>불가:</strong> “누구 전화번호 / 사적인 관계 / 뒷이야기”</p>
+            </div>
+          </section>
+        </div>
+
+        <div class="guideline-actions">
+          <button id="guideline-full-rules-button" class="ghost-button" type="button" data-analytics-skip="true">
+            전체 규칙 보기
+          </button>
+          <button id="guideline-continue-button" class="primary-button" type="button" data-analytics-skip="true">
+            다음 단계로 이동
+          </button>
+        </div>
+      </section>
+    </div>
+
     <div id="page-browser-modal" class="page-browser-modal" hidden>
       <div id="page-browser-backdrop" class="page-browser-backdrop"></div>
       <section class="page-browser-sheet" aria-label="문서 둘러보기">

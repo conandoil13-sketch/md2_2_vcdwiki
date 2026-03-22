@@ -320,6 +320,78 @@ button {
   gap: 10px;
 }
 
+.guideline-sheet {
+  width: min(760px, calc(100% - 32px));
+}
+
+.guideline-card-list {
+  display: grid;
+  gap: 10px;
+}
+
+.guideline-card {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.64);
+}
+
+.guideline-card-toggle {
+  width: 100%;
+  padding: 14px 16px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 12px;
+  text-align: left;
+}
+
+.guideline-card-toggle strong,
+.guideline-card-toggle small {
+  display: block;
+}
+
+.guideline-card-toggle small {
+  margin-top: 4px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.guideline-card-icon {
+  min-width: 28px;
+  min-height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.guideline-card-body {
+  padding: 0 16px 14px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.guideline-card-body p {
+  margin: 0 0 8px;
+}
+
+.guideline-card-body p:last-child {
+  margin-bottom: 0;
+}
+
+.guideline-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .filter-chip {
   min-height: 42px;
   padding: 0 14px;
@@ -842,6 +914,11 @@ sup a {
   .page-browser-meta {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .guideline-actions {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 
   .intro-modal .page-browser-sheet {

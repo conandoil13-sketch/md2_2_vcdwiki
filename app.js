@@ -3,6 +3,7 @@
   const THEME_STORAGE_KEY = "kmu-vcd-wiki-theme";
   // 정식 출시 시 이 키와 intro modal 관련 로직을 함께 제거하면 됩니다.
   const INTRO_MODAL_STORAGE_KEY = "kmu-vcd-wiki-intro-seen";
+  const GUIDELINE_MODAL_STORAGE_KEY = "kmu-vcd-wiki-guideline-seen";
   const THEMES = [
     {
       id: "council-26",
@@ -68,6 +69,18 @@
     isPageBrowserOpen: false,
     isThemeModalOpen: false,
     isIntroModalOpen: false,
+    isGuidelineModalOpen: false,
+    pendingEditAction: null,
+    expandedGuidelineCards: {
+      fact: false,
+      info: false,
+      privacy: false,
+    },
+    trackedGuidelineCards: {
+      fact: false,
+      info: false,
+      privacy: false,
+    },
     pageFilter: "전체",
   };
 
@@ -99,6 +112,16 @@
     introModal: document.getElementById("intro-modal"),
     introBackdrop: document.getElementById("intro-backdrop"),
     closeIntroModalButton: document.getElementById("close-intro-modal-button"),
+    guidelineModal: document.getElementById("guideline-modal"),
+    guidelineBackdrop: document.getElementById("guideline-backdrop"),
+    closeGuidelineModalButton: document.getElementById("close-guideline-modal-button"),
+    guidelineContinueButton: document.getElementById("guideline-continue-button"),
+    guidelineFullRulesButton: document.getElementById("guideline-full-rules-button"),
+    guidelineCardButtons: {
+      fact: document.getElementById("guideline-card-fact-button"),
+      info: document.getElementById("guideline-card-info-button"),
+      privacy: document.getElementById("guideline-card-privacy-button"),
+    },
     themeModal: document.getElementById("theme-modal"),
     themeBackdrop: document.getElementById("theme-backdrop"),
     closeThemeModalButton: document.getElementById("close-theme-modal-button"),
@@ -169,6 +192,10 @@
         return;
       }
 
+      if (button.dataset.analyticsSkip === "true") {
+        return;
+      }
+
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
         event: "custom_click",
@@ -210,7 +237,7 @@
     });
 
     elements.viewModeButton.addEventListener("click", () => setMode("view"));
-    elements.editModeButton.addEventListener("click", () => setMode("edit"));
+    elements.editModeButton.addEventListener("click", () => startEditFlow("edit"));
     elements.previewModeButton.addEventListener("click", () => setMode("preview"));
     elements.browsePagesButton.addEventListener("click", openPageBrowser);
     elements.themeModalButton.addEventListener("click", openThemeModal);
@@ -218,17 +245,14 @@
     elements.pageBrowserBackdrop.addEventListener("click", closePageBrowser);
     elements.closeIntroModalButton.addEventListener("click", closeIntroModal);
     elements.introBackdrop.addEventListener("click", closeIntroModal);
+    elements.closeGuidelineModalButton.addEventListener("click", closeGuidelineModal);
+    elements.guidelineBackdrop.addEventListener("click", closeGuidelineModal);
+    elements.guidelineContinueButton.addEventListener("click", continueFromGuidelineModal);
+    elements.guidelineFullRulesButton.addEventListener("click", openFullGuidelinesPage);
     elements.closeThemeModalButton.addEventListener("click", closeThemeModal);
     elements.themeBackdrop.addEventListener("click", closeThemeModal);
 
-    elements.createPageButton.addEventListener("click", () => {
-      const newPage = createBlankPage();
-      state.pages = [newPage, ...state.pages];
-      state.currentPageId = newPage.id;
-      fillEditor(newPage);
-      setMode("edit");
-      renderApp();
-    });
+    elements.createPageButton.addEventListener("click", () => startEditFlow("create"));
 
     elements.saveButton.addEventListener("click", async () => {
       const draft = buildPageFromEditor();
@@ -258,6 +282,10 @@
     elements.macroButtons.forEach((button) => {
       button.addEventListener("click", () => insertMacro(button.dataset.macro));
     });
+
+    Object.entries(elements.guidelineCardButtons).forEach(([cardKey, button]) => {
+      button.addEventListener("click", () => toggleGuidelineCard(cardKey));
+    });
   }
 
   function renderApp() {
@@ -265,9 +293,11 @@
     renderPageList();
     renderRecentChanges();
     renderSearchSuggestions();
+    renderGuidelineCards();
     renderCurrentPage();
     syncPageBrowser();
     syncIntroModal();
+    syncGuidelineModal();
     syncThemeModal();
     syncModeButtons();
   }
@@ -701,12 +731,56 @@
     document.body.style.overflow = shouldLockBodyScroll() ? "hidden" : "";
   }
 
+  function openGuidelineModal(actionType) {
+    state.pendingEditAction = actionType;
+    state.isGuidelineModalOpen = true;
+    state.isPageBrowserOpen = false;
+    state.isThemeModalOpen = false;
+    trackAnalyticsEvent("guideline_modal_view", { entry_point: actionType });
+    syncGuidelineModal();
+    syncPageBrowser();
+    syncThemeModal();
+  }
+
+  function closeGuidelineModal() {
+    state.isGuidelineModalOpen = false;
+    state.pendingEditAction = null;
+    trackAnalyticsEvent("guideline_modal_close");
+    syncGuidelineModal();
+  }
+
+  function continueFromGuidelineModal() {
+    trackAnalyticsEvent("guideline_modal_continue");
+    localStorage.setItem(GUIDELINE_MODAL_STORAGE_KEY, "true");
+    state.isGuidelineModalOpen = false;
+    const actionType = state.pendingEditAction;
+    state.pendingEditAction = null;
+    syncGuidelineModal();
+
+    if (actionType === "create") {
+      createNewPageAndEnterEdit();
+      return;
+    }
+
+    setMode("edit");
+  }
+
+  function syncGuidelineModal() {
+    elements.guidelineModal.hidden = !state.isGuidelineModalOpen;
+    document.body.style.overflow = shouldLockBodyScroll() ? "hidden" : "";
+  }
+
   function shouldShowIntroModal() {
     return sessionStorage.getItem(INTRO_MODAL_STORAGE_KEY) !== "true";
   }
 
   function shouldLockBodyScroll() {
-    return state.isPageBrowserOpen || state.isThemeModalOpen || state.isIntroModalOpen;
+    return (
+      state.isPageBrowserOpen ||
+      state.isThemeModalOpen ||
+      state.isIntroModalOpen ||
+      state.isGuidelineModalOpen
+    );
   }
 
   function scrollToTop() {
@@ -732,6 +806,86 @@
 
   function hasPage(pageId) {
     return state.pages.some((page) => page.id === pageId);
+  }
+
+  function startEditFlow(actionType) {
+    if (shouldShowGuidelineModal()) {
+      openGuidelineModal(actionType);
+      return;
+    }
+
+    if (actionType === "create") {
+      createNewPageAndEnterEdit();
+      return;
+    }
+
+    setMode("edit");
+  }
+
+  function shouldShowGuidelineModal() {
+    return localStorage.getItem(GUIDELINE_MODAL_STORAGE_KEY) !== "true";
+  }
+
+  function createNewPageAndEnterEdit() {
+    const newPage = createBlankPage();
+    state.pages = [newPage, ...state.pages];
+    state.currentPageId = newPage.id;
+    fillEditor(newPage);
+    setMode("edit");
+    renderApp();
+    syncUrlWithCurrentPage();
+  }
+
+  function toggleGuidelineCard(cardKey) {
+    const expanded = !state.expandedGuidelineCards[cardKey];
+    state.expandedGuidelineCards[cardKey] = expanded;
+
+    if (expanded && !state.trackedGuidelineCards[cardKey]) {
+      const eventMap = {
+        fact: "guideline_card_fact_expand",
+        info: "guideline_card_info_expand",
+        privacy: "guideline_card_privacy_expand",
+      };
+      trackAnalyticsEvent(eventMap[cardKey]);
+      state.trackedGuidelineCards[cardKey] = true;
+    }
+
+    renderGuidelineCards();
+  }
+
+  function renderGuidelineCards() {
+    Object.entries(elements.guidelineCardButtons).forEach(([cardKey, button]) => {
+      const card = button.closest(".guideline-card");
+      const body = card.querySelector(".guideline-card-body");
+      const icon = card.querySelector(".guideline-card-icon");
+      const expanded = state.expandedGuidelineCards[cardKey];
+
+      button.setAttribute("aria-expanded", String(expanded));
+      card.classList.toggle("is-expanded", expanded);
+      body.hidden = !expanded;
+      icon.textContent = expanded ? "-" : "+";
+    });
+  }
+
+  function openFullGuidelinesPage() {
+    trackAnalyticsEvent("guideline_full_rules_click");
+    state.currentPageId = "community-guidelines";
+    state.isGuidelineModalOpen = false;
+    state.pendingEditAction = null;
+    setMode("view");
+    renderApp();
+    syncUrlWithCurrentPage();
+    scrollToTop();
+  }
+
+  function trackAnalyticsEvent(eventName, params) {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: eventName,
+      event_name: eventName,
+      page_path: `${window.location.pathname}${window.location.hash}`,
+      ...params,
+    });
   }
 
   function applyTheme(themeId) {
