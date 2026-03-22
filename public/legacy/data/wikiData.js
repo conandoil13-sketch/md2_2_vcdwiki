@@ -1,3 +1,6 @@
+/* 이 파일은 scripts/export-wiki-seed.mjs가 data/wikiData.js를 기준으로 자동 생성합니다.
+   직접 수정하지 말고, 원본인 data/wikiData.js를 수정한 뒤 npm run wiki:sync 를 실행해 주세요. */
+
 /*
   이 파일이 "문서 원본 데이터"입니다.
   지금은 서버가 없으니, 일단 여기만 수정해도 사이트에 문서가 보이게 만들어 두었습니다.
@@ -1741,3 +1744,4 @@ window.WIKI_SEED_DATA = {
 
   ]
 };
+

@@ -12,6 +12,10 @@ export async function GET(
     data: { user },
   } = await supabase.auth.getUser();
 
+  if (!user) {
+    return NextResponse.json({ error: "수정 기록은 로그인 후 확인할 수 있습니다." }, { status: 401 });
+  }
+
   const { data: profile } = user
     ? await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle()
     : { data: null };

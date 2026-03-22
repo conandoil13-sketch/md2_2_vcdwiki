@@ -28,7 +28,8 @@
 - `index.html`: 기존 정적 화면 구조
 - `styles.css`: 기존 정적 스타일
 - `app.js`: 기존 정적 동작 로직
-- `data/wikiData.js`: 기존 문서 원본 데이터
+- `data/wikiData.js`: 문서 원본 데이터의 유일한 수정 지점
+- `public/legacy/data/wikiData.js`: 자동 생성되는 legacy용 복사본
 
 ## 실행 방법
 
@@ -43,7 +44,7 @@
 1. [supabase/schema.sql](/Users/alltimesuho/Desktop/코딩/VCDWiki/supabase/schema.sql) 실행
 2. [supabase/seed.sql](/Users/alltimesuho/Desktop/코딩/VCDWiki/supabase/seed.sql) 실행
 3. `profiles` 테이블에서 내 계정의 `role`을 `admin`으로 변경
-4. 락/수정기록 공개 열람 기능을 쓰려면 [supabase/lock-and-history-upgrade.sql](/Users/alltimesuho/Desktop/코딩/VCDWiki/supabase/lock-and-history-upgrade.sql)도 실행
+4. 락/수정기록 보호 기능을 쓰려면 [supabase/lock-and-history-upgrade.sql](/Users/alltimesuho/Desktop/코딩/VCDWiki/supabase/lock-and-history-upgrade.sql)도 실행
 
 예시 SQL:
 
@@ -78,11 +79,20 @@ where email = 'your-name@kookmin.ac.kr';
 
 ## 시드 다시 만들기
 
-`data/wikiData.js`를 고친 뒤 아래 명령을 실행하면 seed TypeScript와 SQL이 다시 생성됩니다.
+앞으로 문서 데이터는 [data/wikiData.js](/Users/alltimesuho/Desktop/코딩/VCDWiki/data/wikiData.js)만 수정하면 됩니다.
+
+그 뒤 아래 명령을 실행하면
+- `lib/wiki-seed.generated.ts`
+- `supabase/seed.sql`
+- `public/legacy/data/wikiData.js`
+
+가 한 번에 다시 생성됩니다.
 
 ```bash
-npm run seed:export
+npm run wiki:sync
 ```
+
+`npm run dev`, `npm run build` 전에는 이 동기화가 자동으로 한 번 실행되게 해두었습니다.
 
 ## 다음 단계
 

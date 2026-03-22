@@ -6,6 +6,7 @@ const projectRoot = process.cwd();
 const sourcePath = path.join(projectRoot, "data/wikiData.js");
 const outputTsPath = path.join(projectRoot, "lib/wiki-seed.generated.ts");
 const outputSqlPath = path.join(projectRoot, "supabase/seed.sql");
+const outputLegacyDataPath = path.join(projectRoot, "public/legacy/data/wikiData.js");
 
 const source = fs.readFileSync(sourcePath, "utf8");
 const context = {
@@ -73,9 +74,22 @@ set
   is_published = excluded.is_published;
 `;
 
+const legacyContent = `/* 이 파일은 scripts/export-wiki-seed.mjs가 data/wikiData.js를 기준으로 자동 생성합니다.
+   직접 수정하지 말고, 원본인 data/wikiData.js를 수정한 뒤 npm run wiki:sync 를 실행해 주세요. */
+
+${source}
+`;
+
 fs.mkdirSync(path.dirname(outputTsPath), { recursive: true });
 fs.mkdirSync(path.dirname(outputSqlPath), { recursive: true });
+fs.mkdirSync(path.dirname(outputLegacyDataPath), { recursive: true });
 fs.writeFileSync(outputTsPath, tsContent);
 fs.writeFileSync(outputSqlPath, sqlContent);
+fs.writeFileSync(outputLegacyDataPath, legacyContent);
 
-console.log(`Generated ${path.relative(projectRoot, outputTsPath)} and ${path.relative(projectRoot, outputSqlPath)}`);
+console.log(
+  `Generated ${path.relative(projectRoot, outputTsPath)}, ${path.relative(
+    projectRoot,
+    outputSqlPath
+  )}, and ${path.relative(projectRoot, outputLegacyDataPath)}`
+);

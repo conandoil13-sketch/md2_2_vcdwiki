@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "seed:export": "node scripts/export-wiki-seed.mjs"
+    "seed:export": "node scripts/export-wiki-seed.mjs",
+    "wiki:sync": "node scripts/export-wiki-seed.mjs",
+    "predev": "npm run wiki:sync",
+    "prebuild": "npm run wiki:sync"
   },
   "dependencies": {
     "@supabase/ssr": "^0.9.0",

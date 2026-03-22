@@ -15,5 +15,5 @@ drop policy if exists "revisions_public_read" on public.wiki_page_revisions;
 create policy "revisions_public_read"
 on public.wiki_page_revisions
 for select
-to anon, authenticated
-using (true);
+to authenticated
+using (public.is_admin_user() or public.is_kookmin_user());

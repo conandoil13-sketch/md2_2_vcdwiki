@@ -834,6 +834,14 @@
       return;
     }
 
+    if (!state.viewer.isLoggedIn) {
+      const shouldMove = window.confirm("수정 기록은 로그인 후 확인할 수 있습니다. 로그인 페이지로 이동할까요?");
+      if (shouldMove && window.top) {
+        window.top.location.href = "/auth";
+      }
+      return;
+    }
+
     state.isPageBrowserOpen = false;
     state.isThemeModalOpen = false;
     state.isRevisionsModalOpen = true;
