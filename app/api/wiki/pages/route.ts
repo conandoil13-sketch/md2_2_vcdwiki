@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAllowedSchoolUser } from "@/lib/auth";
 import { getWikiPages } from "@/lib/wiki";
 import { createSupabaseRouteHandlerClient } from "@/lib/supabase/server";
+import { getPublicAliasFromId } from "@/lib/public-alias";
 
 function normalizeLegacyPage(page: {
   slug: string;
@@ -10,6 +11,9 @@ function normalizeLegacyPage(page: {
   category: string;
   content: string;
   updatedAt: string;
+  isLocked: boolean;
+  lockedBy: string | null;
+  lockedAt: string | null;
 }) {
   return {
     id: page.slug,
@@ -18,6 +22,9 @@ function normalizeLegacyPage(page: {
     category: page.category,
     updatedAt: page.updatedAt,
     content: page.content,
+    isLocked: page.isLocked,
+    lockedAt: page.lockedAt,
+    lockedByAlias: page.lockedBy ? getPublicAliasFromId(page.lockedBy) : null,
   };
 }
 
@@ -44,6 +51,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "학교 메일 계정만 문서를 저장할 수 있습니다." }, { status: 403 });
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  const isAdmin = profile?.role === "admin";
+
   const body = await request.json();
   const slug = String(body?.id ?? "").trim();
   const title = String(body?.title ?? "").trim();
@@ -58,12 +72,16 @@ export async function POST(request: Request) {
 
   const { data: existingPage, error: existingError } = await supabase
     .from("wiki_pages")
-    .select("id, slug")
+    .select("id, slug, is_locked")
     .eq("slug", slug)
     .maybeSingle();
 
   if (existingError) {
     return NextResponse.json({ error: "기존 문서 조회에 실패했습니다." }, { status: 500 });
+  }
+
+  if (existingPage?.is_locked && !isAdmin) {
+    return NextResponse.json({ error: "이 문서는 관리자에 의해 잠겨 있어 수정할 수 없습니다." }, { status: 423 });
   }
 
   let pageId = existingPage?.id ?? null;

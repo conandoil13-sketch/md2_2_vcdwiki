@@ -18,6 +18,9 @@ create table if not exists public.wiki_pages (
   content text not null default '',
   updated_at date not null default current_date,
   is_published boolean not null default true,
+  is_locked boolean not null default false,
+  locked_by uuid references public.profiles (id) on delete set null,
+  locked_at timestamptz,
   created_by uuid references public.profiles (id) on delete set null,
   created_at timestamptz not null default now(),
   modified_at timestamptz not null default now()
@@ -158,8 +161,8 @@ create policy "kookmin_users_update_pages"
 on public.wiki_pages
 for update
 to authenticated
-using (public.is_kookmin_user())
-with check (public.is_kookmin_user());
+using (public.is_kookmin_user() and (is_locked = false or public.is_admin_user()))
+with check (public.is_kookmin_user() and (is_locked = false or public.is_admin_user()));
 
 drop policy if exists "admin_delete_pages" on public.wiki_pages;
 create policy "admin_delete_pages"
@@ -172,8 +175,8 @@ drop policy if exists "revisions_public_read" on public.wiki_page_revisions;
 create policy "revisions_public_read"
 on public.wiki_page_revisions
 for select
-to authenticated
-using (public.is_admin_user() or public.is_kookmin_user());
+to anon, authenticated
+using (true);
 
 drop policy if exists "kookmin_users_insert_revisions" on public.wiki_page_revisions;
 create policy "kookmin_users_insert_revisions"

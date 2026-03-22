@@ -43,6 +43,7 @@
 1. [supabase/schema.sql](/Users/alltimesuho/Desktop/코딩/VCDWiki/supabase/schema.sql) 실행
 2. [supabase/seed.sql](/Users/alltimesuho/Desktop/코딩/VCDWiki/supabase/seed.sql) 실행
 3. `profiles` 테이블에서 내 계정의 `role`을 `admin`으로 변경
+4. 락/수정기록 공개 열람 기능을 쓰려면 [supabase/lock-and-history-upgrade.sql](/Users/alltimesuho/Desktop/코딩/VCDWiki/supabase/lock-and-history-upgrade.sql)도 실행
 
 예시 SQL:
 

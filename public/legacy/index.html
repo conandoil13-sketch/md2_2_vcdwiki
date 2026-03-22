@@ -101,6 +101,12 @@
             <div class="article-actions">
               <div class="article-path" id="article-path">문서</div>
               <div class="action-buttons">
+                <button id="revisions-button" class="ghost-button utility-inline-button" type="button">
+                  수정 기록
+                </button>
+                <button id="lock-button" class="ghost-button utility-inline-button" type="button" hidden>
+                  문서 잠금
+                </button>
                 <button id="view-mode-button" class="mode-button is-active" type="button">
                   보기
                 </button>
@@ -280,6 +286,29 @@
         </div>
 
         <nav id="page-list" class="page-list" aria-label="문서 목록"></nav>
+      </section>
+    </div>
+
+    <div id="revisions-modal" class="page-browser-modal" hidden>
+      <div id="revisions-backdrop" class="page-browser-backdrop"></div>
+      <section class="page-browser-sheet revisions-sheet" aria-label="문서 수정 기록">
+        <div class="page-browser-header">
+          <div>
+            <p class="eyebrow">Revision History</p>
+            <h2>문서 수정 기록</h2>
+            <p id="revisions-copy" class="page-browser-copy">
+              누가 어떤 버전을 남겼는지 확인할 수 있습니다.
+            </p>
+          </div>
+          <button id="close-revisions-modal-button" class="ghost-button" type="button">닫기</button>
+        </div>
+
+        <div class="revisions-layout">
+          <div id="revisions-list" class="revisions-list"></div>
+          <div id="revision-preview" class="revision-preview">
+            <div class="empty-state">왼쪽에서 버전을 선택하면 내용이 보입니다.</div>
+          </div>
+        </div>
       </section>
     </div>
 

@@ -11,6 +11,9 @@ export type WikiPage = {
   content: string;
   updatedAt: string;
   isPublished: boolean;
+  isLocked: boolean;
+  lockedBy: string | null;
+  lockedAt: string | null;
 };
 
 function mapSeedPage(page: SeedWikiPage): WikiPage {
@@ -23,6 +26,9 @@ function mapSeedPage(page: SeedWikiPage): WikiPage {
     content: page.content,
     updatedAt: page.updatedAt,
     isPublished: true,
+    isLocked: false,
+    lockedBy: null,
+    lockedAt: null,
   };
 }
 
@@ -35,6 +41,9 @@ function mapDatabasePage(page: {
   content: string;
   updated_at: string;
   is_published: boolean;
+  is_locked?: boolean;
+  locked_by?: string | null;
+  locked_at?: string | null;
 }): WikiPage {
   return {
     id: page.id,
@@ -45,6 +54,9 @@ function mapDatabasePage(page: {
     content: page.content,
     updatedAt: page.updated_at,
     isPublished: page.is_published,
+    isLocked: Boolean(page.is_locked),
+    lockedBy: page.locked_by ?? null,
+    lockedAt: page.locked_at ?? null,
   };
 }
 
@@ -64,7 +76,7 @@ export async function getWikiPages() {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from("wiki_pages")
-      .select("id, slug, title, summary, category, content, updated_at, is_published")
+      .select("id, slug, title, summary, category, content, updated_at, is_published, is_locked, locked_by, locked_at")
       .eq("is_published", true)
       .order("title", { ascending: true });
 

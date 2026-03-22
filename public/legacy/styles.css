@@ -324,6 +324,73 @@ button {
   width: min(760px, calc(100% - 32px));
 }
 
+.revisions-sheet {
+  width: min(1040px, calc(100% - 32px));
+}
+
+.revisions-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  gap: 14px;
+  min-height: 420px;
+}
+
+.revisions-list,
+.revision-preview {
+  min-height: 0;
+  padding: 10px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.revisions-list {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  max-height: 60vh;
+  overflow: auto;
+}
+
+.revision-item {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.84);
+  text-align: left;
+}
+
+.revision-item.is-active {
+  border-color: var(--accent);
+  background: rgba(175, 63, 47, 0.1);
+}
+
+.revision-item strong,
+.revision-item small {
+  display: block;
+}
+
+.revision-item small,
+.revision-preview-meta span {
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+.revision-preview {
+  overflow: auto;
+}
+
+.revision-preview-meta {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.revision-meta-box {
+  margin-bottom: 14px;
+}
+
 .guideline-card-list {
   display: grid;
   gap: 10px;
@@ -630,6 +697,13 @@ button {
   flex-wrap: wrap;
 }
 
+.utility-inline-button {
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+}
+
 .article-layout {
   grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
   align-items: start;
@@ -897,7 +971,7 @@ sup a {
 
   .action-buttons {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 8px;
     width: 100%;
   }
@@ -919,6 +993,15 @@ sup a {
   .guideline-actions {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .revisions-layout {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .revisions-list {
+    max-height: 32vh;
   }
 
   .intro-modal .page-browser-sheet {
@@ -946,6 +1029,12 @@ sup a {
   .mode-button,
   .primary-button {
     width: 100%;
+  }
+
+  .action-buttons .utility-inline-button {
+    min-width: 0;
+    padding: 0 6px;
+    font-size: 0.78rem;
   }
 
   .action-buttons .mode-button {

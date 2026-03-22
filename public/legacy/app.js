@@ -87,6 +87,9 @@
       isAdmin: false,
       email: null,
     },
+    revisions: [],
+    selectedRevisionId: null,
+    isRevisionsModalOpen: false,
   };
 
   const elements = {
@@ -106,6 +109,8 @@
     heroTitle: document.getElementById("hero-title"),
     heroDescription: document.getElementById("hero-description"),
     articlePath: document.getElementById("article-path"),
+    revisionsButton: document.getElementById("revisions-button"),
+    lockButton: document.getElementById("lock-button"),
     viewModeButton: document.getElementById("view-mode-button"),
     editModeButton: document.getElementById("edit-mode-button"),
     previewModeButton: document.getElementById("preview-mode-button"),
@@ -114,6 +119,12 @@
     closePageBrowserButton: document.getElementById("close-page-browser-button"),
     pageBrowserModal: document.getElementById("page-browser-modal"),
     pageBrowserBackdrop: document.getElementById("page-browser-backdrop"),
+    revisionsModal: document.getElementById("revisions-modal"),
+    revisionsBackdrop: document.getElementById("revisions-backdrop"),
+    closeRevisionsModalButton: document.getElementById("close-revisions-modal-button"),
+    revisionsList: document.getElementById("revisions-list"),
+    revisionPreview: document.getElementById("revision-preview"),
+    revisionsCopy: document.getElementById("revisions-copy"),
     introModal: document.getElementById("intro-modal"),
     introBackdrop: document.getElementById("intro-backdrop"),
     closeIntroModalButton: document.getElementById("close-intro-modal-button"),
@@ -202,6 +213,37 @@
         };
       }
     },
+
+    async fetchRevisions(pageId) {
+      const response = await fetch(`/api/wiki/pages/${encodeURIComponent(pageId)}/revisions`, {
+        credentials: "include",
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.error || "수정 기록을 불러오지 못했습니다.");
+      }
+
+      return payload;
+    },
+
+    async updateLock(pageId, locked) {
+      const response = await fetch(`/api/wiki/pages/${encodeURIComponent(pageId)}/lock`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ locked }),
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.error || "문서 잠금 상태를 바꾸지 못했습니다.");
+      }
+
+      return payload;
+    },
   };
 
   initialize();
@@ -283,6 +325,9 @@
     elements.themeModalButton.addEventListener("click", openThemeModal);
     elements.closePageBrowserButton.addEventListener("click", closePageBrowser);
     elements.pageBrowserBackdrop.addEventListener("click", closePageBrowser);
+    elements.revisionsButton.addEventListener("click", openRevisionsModal);
+    elements.closeRevisionsModalButton.addEventListener("click", closeRevisionsModal);
+    elements.revisionsBackdrop.addEventListener("click", closeRevisionsModal);
     elements.closeIntroModalButton.addEventListener("click", closeIntroModal);
     elements.introBackdrop.addEventListener("click", closeIntroModal);
     elements.closeGuidelineModalButton.addEventListener("click", closeGuidelineModal);
@@ -292,6 +337,7 @@
     elements.closeThemeModalButton.addEventListener("click", closeThemeModal);
     elements.themeBackdrop.addEventListener("click", closeThemeModal);
     elements.authButton.addEventListener("click", handleAuthButtonClick);
+    elements.lockButton.addEventListener("click", toggleCurrentPageLock);
 
     elements.createPageButton.addEventListener("click", () => startEditFlow("create"));
 
@@ -350,6 +396,8 @@
     syncModeButtons();
     syncEditorPermissions();
     syncAuthButton();
+    syncRevisionsModal();
+    syncLockButton();
   }
 
   function renderPageList() {
@@ -510,6 +558,7 @@
     elements.heroTitle.textContent = page.title;
     elements.heroDescription.textContent = page.summary || "문서 설명이 아직 없습니다.";
     elements.articlePath.textContent = `${page.category || "문서"} / ${page.title}`;
+    elements.revisionsCopy.textContent = `${page.title} 문서의 수정 버전과 편집 기록을 볼 수 있습니다.`;
 
     fillEditor(page);
 
@@ -541,6 +590,7 @@
         <div><span class="meta-row">분류</span><br /><strong>${escapeHtml(page.category || "문서")}</strong></div>
         <div><span class="meta-row">요약</span><br /><strong>${escapeHtml(page.summary || "-")}</strong></div>
         <div><span class="meta-row">수정일</span><br /><strong>${escapeHtml(page.updatedAt || "-")}</strong></div>
+        <div><span class="meta-row">편집 상태</span><br /><strong>${page.isLocked ? "잠금됨" : "열림"}</strong></div>
       </div>
       ${parsed.html}
     `;
@@ -705,6 +755,9 @@
       summary: "새 문서 요약을 입력하세요.",
       category: "문서",
       updatedAt: formatDate(new Date()),
+      isLocked: false,
+      lockedAt: null,
+      lockedByAlias: null,
       content: `## 문서 소개\n이 문서는 새로 작성 중입니다.\n`,
     };
   }
@@ -739,8 +792,10 @@
 
   function openPageBrowser() {
     state.isPageBrowserOpen = true;
+    state.isRevisionsModalOpen = false;
     state.isThemeModalOpen = false;
     syncPageBrowser();
+    syncRevisionsModal();
     syncThemeModal();
   }
 
@@ -757,8 +812,10 @@
   function openThemeModal() {
     state.isThemeModalOpen = true;
     state.isPageBrowserOpen = false;
+    state.isRevisionsModalOpen = false;
     syncThemeModal();
     syncPageBrowser();
+    syncRevisionsModal();
   }
 
   function closeThemeModal() {
@@ -768,6 +825,47 @@
 
   function syncThemeModal() {
     elements.themeModal.hidden = !state.isThemeModalOpen;
+    document.body.style.overflow = shouldLockBodyScroll() ? "hidden" : "";
+  }
+
+  async function openRevisionsModal() {
+    const currentPage = getCurrentPage();
+    if (!currentPage) {
+      return;
+    }
+
+    state.isPageBrowserOpen = false;
+    state.isThemeModalOpen = false;
+    state.isRevisionsModalOpen = true;
+    state.revisions = [];
+    state.selectedRevisionId = null;
+    syncPageBrowser();
+    syncThemeModal();
+    syncRevisionsModal();
+
+    elements.revisionsList.innerHTML = '<div class="empty-state">수정 기록을 불러오는 중입니다.</div>';
+    elements.revisionPreview.innerHTML = '<div class="empty-state">버전 내용을 불러오는 중입니다.</div>';
+
+    try {
+      const payload = await wikiApi.fetchRevisions(currentPage.id);
+      state.revisions = payload.revisions || [];
+      state.selectedRevisionId = state.revisions[0]?.id || null;
+      renderRevisions();
+    } catch (error) {
+      elements.revisionsList.innerHTML = `<div class="empty-state">${escapeHtml(
+        error.message || "수정 기록을 불러오지 못했습니다."
+      )}</div>`;
+      elements.revisionPreview.innerHTML = '<div class="empty-state">버전을 불러오지 못했습니다.</div>';
+    }
+  }
+
+  function closeRevisionsModal() {
+    state.isRevisionsModalOpen = false;
+    syncRevisionsModal();
+  }
+
+  function syncRevisionsModal() {
+    elements.revisionsModal.hidden = !state.isRevisionsModalOpen;
     document.body.style.overflow = shouldLockBodyScroll() ? "hidden" : "";
   }
 
@@ -828,6 +926,7 @@
   function shouldLockBodyScroll() {
     return (
       state.isPageBrowserOpen ||
+      state.isRevisionsModalOpen ||
       state.isThemeModalOpen ||
       state.isIntroModalOpen ||
       state.isGuidelineModalOpen
@@ -862,6 +961,12 @@
   function startEditFlow(actionType) {
     if (!state.viewer.canEdit) {
       promptLoginForEditing();
+      return;
+    }
+
+    if (actionType !== "create" && getCurrentPage()?.isLocked && !state.viewer.isAdmin) {
+      elements.copyFeedback.textContent = "이 문서는 관리자에 의해 잠겨 있어 현재 수정할 수 없습니다.";
+      window.alert("이 문서는 관리자에 의해 잠겨 있어 현재 수정할 수 없습니다.");
       return;
     }
 
@@ -1230,6 +1335,89 @@
       : "학교 메일 계정으로 로그인합니다.";
   }
 
+  function syncLockButton() {
+    const currentPage = getCurrentPage();
+    const shouldShow = Boolean(currentPage) && state.viewer.isAdmin;
+
+    elements.lockButton.hidden = !shouldShow;
+
+    if (!shouldShow) {
+      return;
+    }
+
+    elements.lockButton.textContent = currentPage.isLocked ? "잠금 해제" : "문서 잠금";
+    elements.lockButton.title = currentPage.isLocked
+      ? "이 문서의 잠금을 해제합니다."
+      : "이 문서를 잠가 일반 편집을 막습니다.";
+  }
+
+  function renderRevisions() {
+    elements.revisionsList.innerHTML = "";
+
+    if (!state.revisions.length) {
+      elements.revisionsList.innerHTML = '<div class="empty-state">아직 저장된 수정 기록이 없습니다.</div>';
+      elements.revisionPreview.innerHTML = '<div class="empty-state">표시할 버전이 없습니다.</div>';
+      return;
+    }
+
+    state.revisions.forEach((revision) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `revision-item${revision.id === state.selectedRevisionId ? " is-active" : ""}`;
+      button.innerHTML = `
+        <strong>${escapeHtml(revision.revisionNote || "문서 저장")}</strong>
+        <small>${escapeHtml(formatRelativeRevisionMeta(revision))}</small>
+      `;
+      button.addEventListener("click", () => {
+        state.selectedRevisionId = revision.id;
+        renderRevisions();
+      });
+      elements.revisionsList.appendChild(button);
+    });
+
+    const selectedRevision =
+      state.revisions.find((revision) => revision.id === state.selectedRevisionId) || state.revisions[0];
+    const parsed = parseWikiMarkup(selectedRevision.content || "", state.pages);
+    elements.revisionPreview.innerHTML = `
+      <div class="revision-preview-meta">
+        <strong>${escapeHtml(selectedRevision.title || "버전")}</strong>
+        <span>${escapeHtml(formatRelativeRevisionMeta(selectedRevision))}</span>
+      </div>
+      <div class="meta-box revision-meta-box">
+        <div><span class="meta-row">요약</span><br /><strong>${escapeHtml(selectedRevision.summary || "-")}</strong></div>
+        <div><span class="meta-row">분류</span><br /><strong>${escapeHtml(selectedRevision.category || "문서")}</strong></div>
+      </div>
+      ${parsed.html}
+    `;
+  }
+
+  async function toggleCurrentPageLock() {
+    const currentPage = getCurrentPage();
+    if (!currentPage || !state.viewer.isAdmin) {
+      return;
+    }
+
+    try {
+      const payload = await wikiApi.updateLock(currentPage.id, !currentPage.isLocked);
+      state.pages = state.pages.map((page) =>
+        page.id === currentPage.id
+          ? {
+              ...page,
+              isLocked: payload.isLocked,
+              lockedAt: payload.lockedAt,
+              lockedByAlias: payload.lockedBy ? formatAlias(payload.lockedBy) : null,
+            }
+          : page
+      );
+      renderApp();
+      elements.copyFeedback.textContent = payload.isLocked
+        ? "문서가 잠겨 일반 사용자는 편집할 수 없게 되었습니다."
+        : "문서 잠금이 해제되었습니다.";
+    } catch (error) {
+      elements.copyFeedback.textContent = error.message || "문서 잠금 상태를 바꾸지 못했습니다.";
+    }
+  }
+
   function handleAuthButtonClick() {
     if (state.viewer.isLoggedIn) {
       if (window.top) {
@@ -1241,6 +1429,42 @@
     if (window.top) {
       window.top.location.href = "/auth";
     }
+  }
+
+  function formatRelativeRevisionMeta(revision) {
+    const parts = [formatRevisionDate(revision.createdAt), revision.editorAlias || "익명 고래"];
+
+    if (state.viewer.isAdmin && revision.editorEmail) {
+      parts.push(revision.editorEmail);
+    }
+
+    return parts.join(" · ");
+  }
+
+  function formatRevisionDate(value) {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return "-";
+    }
+
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+      date.getDate()
+    ).padStart(2, "0")} ${String(date.getHours()).padStart(2, "0")}:${String(
+      date.getMinutes()
+    ).padStart(2, "0")}`;
+  }
+
+  function formatAlias(id) {
+    const colors = ["파란", "붉은", "초록", "노란", "보라", "은빛", "분홍", "주황", "하얀", "검은", "민트", "청록"];
+    const animals = ["고래", "여우", "수달", "참새", "고양이", "토끼", "사슴", "다람쥐", "독수리", "두루미", "펭귄", "바다표범"];
+    let hash = 0;
+
+    String(id || "").split("").forEach((char) => {
+      hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+    });
+
+    return `${colors[hash % colors.length]} ${animals[Math.floor(hash / colors.length) % animals.length]}`;
   }
 
   function hexToRgba(hex, alpha) {
