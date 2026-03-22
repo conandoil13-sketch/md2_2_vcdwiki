@@ -132,6 +132,7 @@
     closeThemeModalButton: document.getElementById("close-theme-modal-button"),
     pageFilterList: document.getElementById("page-filter-list"),
     pageFilterLabel: document.getElementById("page-filter-label"),
+    authButton: document.getElementById("auth-button"),
     createPageButton: document.getElementById("create-page-button"),
     saveButton: document.getElementById("save-button"),
     copyCodeButton: document.getElementById("copy-code-button"),
@@ -290,6 +291,7 @@
     elements.guidelineFullRulesButton.addEventListener("click", openFullGuidelinesPage);
     elements.closeThemeModalButton.addEventListener("click", closeThemeModal);
     elements.themeBackdrop.addEventListener("click", closeThemeModal);
+    elements.authButton.addEventListener("click", handleAuthButtonClick);
 
     elements.createPageButton.addEventListener("click", () => startEditFlow("create"));
 
@@ -347,6 +349,7 @@
     syncThemeModal();
     syncModeButtons();
     syncEditorPermissions();
+    syncAuthButton();
   }
 
   function renderPageList() {
@@ -1217,6 +1220,26 @@
       elements.copyFeedback.textContent = state.viewer.isLoggedIn
         ? "학교 메일 계정만 문서를 저장할 수 있습니다."
         : "로그인 후 문서를 저장할 수 있습니다.";
+    }
+  }
+
+  function syncAuthButton() {
+    elements.authButton.textContent = state.viewer.isLoggedIn ? "로그아웃" : "로그인";
+    elements.authButton.title = state.viewer.isLoggedIn
+      ? "현재 계정에서 로그아웃합니다."
+      : "학교 메일 계정으로 로그인합니다.";
+  }
+
+  function handleAuthButtonClick() {
+    if (state.viewer.isLoggedIn) {
+      if (window.top) {
+        window.top.location.href = "/auth/logout";
+      }
+      return;
+    }
+
+    if (window.top) {
+      window.top.location.href = "/auth";
     }
   }
 

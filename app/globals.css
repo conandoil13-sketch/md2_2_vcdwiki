@@ -59,71 +59,17 @@ code {
 
 .legacy-shell {
   min-height: 100vh;
-  padding: 14px;
-}
-
-.legacy-toolbar {
-  position: sticky;
-  top: 14px;
-  z-index: 40;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  width: min(1480px, 100%);
-  margin: 0 auto 14px;
-  padding: 14px 16px;
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  background: rgba(255, 249, 241, 0.92);
-  backdrop-filter: blur(16px);
-  box-shadow: var(--shadow);
-}
-
-.legacy-toolbar-copy {
-  display: grid;
-  gap: 4px;
-}
-
-.legacy-toolbar-copy strong {
-  font-size: 0.98rem;
-}
-
-.legacy-toolbar-copy p {
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.5;
-}
-
-.legacy-toolbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.legacy-user-chip {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.74);
-  color: var(--text);
-  white-space: nowrap;
+  padding: 0;
 }
 
 .legacy-frame {
   display: block;
   width: min(1480px, 100%);
-  height: calc(100vh - 120px);
+  height: 100vh;
   margin: 0 auto;
   border: 0;
-  border-radius: 28px;
+  border-radius: 0;
   background: transparent;
-  box-shadow: var(--shadow);
 }
 
 .hero {
@@ -424,19 +370,8 @@ code {
     grid-template-columns: 1fr;
   }
 
-  .legacy-toolbar {
-    position: static;
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
-  .legacy-toolbar-actions {
-    justify-content: stretch;
-  }
-
   .legacy-frame {
-    height: calc(100vh - 220px);
-    border-radius: 20px;
+    height: 100vh;
   }
 
   .hero-copy,
@@ -465,8 +400,4 @@ code {
     width: 100%;
   }
 
-  .legacy-user-chip {
-    width: 100%;
-    justify-content: center;
-  }
 }
