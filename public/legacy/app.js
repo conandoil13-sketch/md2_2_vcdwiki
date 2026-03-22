@@ -1,5 +1,4 @@
 (function () {
-  const STORAGE_KEY = "kmu-vcd-wiki-local-pages";
   const THEME_STORAGE_KEY = "kmu-vcd-wiki-theme";
   // 정식 출시 시 이 키와 intro modal 관련 로직을 함께 제거하면 됩니다.
   const INTRO_MODAL_STORAGE_KEY = "kmu-vcd-wiki-intro-seen";
@@ -82,6 +81,12 @@
       privacy: false,
     },
     pageFilter: "전체",
+    viewer: {
+      isLoggedIn: false,
+      canEdit: false,
+      isAdmin: false,
+      email: null,
+    },
   };
 
   const elements = {
@@ -137,32 +142,64 @@
     topbar: document.querySelector(".topbar"),
   };
 
-  const fakeWikiApi = {
+  const wikiApi = {
     async fetchPages() {
-      await delay(120);
-      const seedPages = deepClone(window.WIKI_SEED_DATA.pages || []);
-      const localPages = loadLocalPages();
-      return mergePages(seedPages, localPages);
+      try {
+        const response = await fetch("/api/wiki/pages", {
+          credentials: "include",
+        });
+        const payload = await response.json();
+
+        if (!response.ok || !Array.isArray(payload.pages)) {
+          throw new Error(payload.error || "문서를 불러오지 못했습니다.");
+        }
+
+        return payload.pages;
+      } catch (error) {
+        console.warn("서버 문서를 불러오지 못해 seed 데이터로 표시합니다.", error);
+        return deepClone(window.WIKI_SEED_DATA.pages || []);
+      }
     },
 
     async savePage(page) {
-      await delay(100);
-      const pages = loadLocalPages();
-      const existingIndex = pages.findIndex((item) => item.id === page.id);
+      const response = await fetch("/api/wiki/pages", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(page),
+      });
+      const payload = await response.json();
 
-      if (existingIndex >= 0) {
-        pages[existingIndex] = page;
-      } else {
-        pages.push(page);
+      if (!response.ok) {
+        throw new Error(payload.error || "문서 저장에 실패했습니다.");
       }
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(pages));
-      return page;
+      return payload.page;
     },
 
-    async clearLocalEdits() {
-      await delay(80);
-      localStorage.removeItem(STORAGE_KEY);
+    async fetchViewer() {
+      try {
+        const response = await fetch("/api/wiki/session", {
+          credentials: "include",
+        });
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload.error || "로그인 정보를 불러오지 못했습니다.");
+        }
+
+        return payload;
+      } catch (error) {
+        console.warn("로그인 정보를 불러오지 못했습니다.", error);
+        return {
+          isLoggedIn: false,
+          canEdit: false,
+          isAdmin: false,
+          email: null,
+        };
+      }
     },
   };
 
@@ -178,7 +215,9 @@
     applyTheme(state.themeId);
     state.isIntroModalOpen = shouldShowIntroModal();
 
-    state.pages = await fakeWikiApi.fetchPages();
+    state.viewer = await wikiApi.fetchViewer();
+    updateEditorActionLabels();
+    state.pages = await wikiApi.fetchPages();
     state.currentPageId = resolveInitialPageId();
     renderApp();
     // 정적 배포용 URL 동기화입니다. 추후 동적 사이트 전환 시 router push로 교체하면 됩니다.
@@ -256,11 +295,18 @@
 
     elements.saveButton.addEventListener("click", async () => {
       const draft = buildPageFromEditor();
-      await fakeWikiApi.savePage(draft);
-      state.pages = await fakeWikiApi.fetchPages();
-      state.currentPageId = draft.id;
-      setMode("view");
-      renderApp();
+      elements.copyFeedback.textContent = "";
+
+      try {
+        const savedPage = await wikiApi.savePage(draft);
+        state.pages = await wikiApi.fetchPages();
+        state.currentPageId = savedPage.id;
+        elements.copyFeedback.textContent = "문서가 서버에 저장되었습니다.";
+        setMode("view");
+        renderApp();
+      } catch (error) {
+        elements.copyFeedback.textContent = error.message || "문서 저장에 실패했습니다.";
+      }
     });
 
     elements.copyCodeButton.addEventListener("click", async () => {
@@ -300,6 +346,7 @@
     syncGuidelineModal();
     syncThemeModal();
     syncModeButtons();
+    syncEditorPermissions();
   }
 
   function renderPageList() {
@@ -561,9 +608,10 @@
     const existing = getCurrentPage();
     const title = elements.editorTitle.value.trim() || "새 문서";
     const summary = elements.editorSummary.value.trim();
+    const isTemporaryPage = existing?.id && /^new-page-\d+$/.test(existing.id);
 
     return {
-      id: existing && existing.id ? existing.id : slugify(title),
+      id: existing && existing.id && !isTemporaryPage ? existing.id : slugify(title),
       title,
       summary,
       category: existing?.category || "문서",
@@ -809,6 +857,11 @@
   }
 
   function startEditFlow(actionType) {
+    if (!state.viewer.canEdit) {
+      promptLoginForEditing();
+      return;
+    }
+
     if (shouldShowGuidelineModal()) {
       openGuidelineModal(actionType);
       return;
@@ -1081,30 +1134,6 @@
     );
   }
 
-  function mergePages(seedPages, localPages) {
-    const merged = [...seedPages];
-
-    localPages.forEach((localPage) => {
-      const index = merged.findIndex((seedPage) => seedPage.id === localPage.id);
-      if (index >= 0) {
-        merged[index] = localPage;
-      } else {
-        merged.push(localPage);
-      }
-    });
-
-    return merged;
-  }
-
-  function loadLocalPages() {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    } catch (error) {
-      console.warn("로컬 위키 데이터를 읽지 못했습니다.", error);
-      return [];
-    }
-  }
-
   function loadThemeId() {
     const stored = localStorage.getItem(THEME_STORAGE_KEY);
     return THEMES.some((theme) => theme.id === stored) ? stored : THEMES[0].id;
@@ -1158,6 +1187,37 @@
       .toLowerCase()
       .replace(/[^\w가-힣\s-]/g, "")
       .replace(/\s+/g, "-");
+  }
+
+  function promptLoginForEditing() {
+    if (!state.viewer.isLoggedIn) {
+      elements.copyFeedback.textContent = "문서를 작성하려면 먼저 학교 메일로 로그인해 주세요.";
+      const shouldMove = window.confirm("문서를 편집하려면 로그인이 필요합니다. 로그인 페이지로 이동할까요?");
+      if (shouldMove && window.top) {
+        window.top.location.href = "/auth";
+      }
+      return;
+    }
+
+    elements.copyFeedback.textContent = "학교 메일 계정 사용자만 문서를 저장할 수 있습니다.";
+    window.alert("학교 메일 계정 사용자만 문서를 저장할 수 있습니다.");
+  }
+
+  function updateEditorActionLabels() {
+    elements.saveButton.textContent = "문서 저장";
+  }
+
+  function syncEditorPermissions() {
+    const canEdit = state.viewer.canEdit;
+
+    elements.saveButton.disabled = !canEdit;
+    elements.saveButton.title = canEdit ? "현재 문서를 서버에 저장합니다." : "학교 메일 로그인 후 저장할 수 있습니다.";
+
+    if (!canEdit && state.mode === "edit") {
+      elements.copyFeedback.textContent = state.viewer.isLoggedIn
+        ? "학교 메일 계정만 문서를 저장할 수 있습니다."
+        : "로그인 후 문서를 저장할 수 있습니다.";
+    }
   }
 
   function hexToRgba(hex, alpha) {
