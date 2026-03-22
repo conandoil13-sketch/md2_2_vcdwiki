@@ -702,6 +702,29 @@ button {
   padding: 0 12px;
   border-radius: 999px;
   font-size: 0.88rem;
+  background: rgba(44, 139, 191, 0.12);
+  border-color: rgba(44, 139, 191, 0.28);
+  color: #1d607f;
+}
+
+.danger-inline-button {
+  background: rgba(175, 63, 47, 0.12);
+  border-color: rgba(175, 63, 47, 0.28);
+  color: #9a3224;
+}
+
+.mode-button.is-disabled {
+  background: rgba(129, 129, 129, 0.14);
+  border-color: rgba(129, 129, 129, 0.24);
+  color: rgba(52, 52, 52, 0.55);
+  pointer-events: none;
+  transform: none;
+}
+
+.mode-button[disabled],
+.primary-button[disabled] {
+  cursor: not-allowed;
+  opacity: 1;
 }
 
 .article-layout {

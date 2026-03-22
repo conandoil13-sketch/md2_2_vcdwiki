@@ -1316,15 +1316,28 @@
   }
 
   function syncEditorPermissions() {
+    const currentPage = getCurrentPage();
     const canEdit = state.viewer.canEdit;
+    const isLocked = Boolean(currentPage?.isLocked);
+    const shouldDisableEdit = isLocked;
 
     elements.saveButton.disabled = !canEdit;
     elements.saveButton.title = canEdit ? "현재 문서를 서버에 저장합니다." : "학교 메일 로그인 후 저장할 수 있습니다.";
+    elements.editModeButton.disabled = shouldDisableEdit;
+    elements.editModeButton.classList.toggle("is-disabled", shouldDisableEdit);
+    elements.editModeButton.title = shouldDisableEdit
+      ? "이 문서는 잠겨 있어 현재 편집할 수 없습니다."
+      : "현재 문서를 편집합니다.";
 
     if (!canEdit && state.mode === "edit") {
       elements.copyFeedback.textContent = state.viewer.isLoggedIn
         ? "학교 메일 계정만 문서를 저장할 수 있습니다."
         : "로그인 후 문서를 저장할 수 있습니다.";
+    }
+
+    if (shouldDisableEdit && state.mode === "edit") {
+      setMode("view");
+      elements.copyFeedback.textContent = "이 문서는 현재 잠겨 있어 편집할 수 없습니다.";
     }
   }
 
