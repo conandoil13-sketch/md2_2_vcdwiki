@@ -1,0 +1,377 @@
+:root {
+  --bg: #f6f0e7;
+  --bg-soft: #fff9f2;
+  --panel: rgba(255, 251, 245, 0.92);
+  --line: rgba(86, 63, 27, 0.16);
+  --text: #22170d;
+  --muted: #6d5c49;
+  --accent: #af3f2f;
+  --accent-strong: #8f2518;
+  --success: #2c6a4a;
+  --shadow: 0 24px 48px rgba(68, 47, 19, 0.08);
+  --radius-xl: 28px;
+  --radius-lg: 20px;
+  --radius-md: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(210, 135, 84, 0.16), transparent 24%),
+    radial-gradient(circle at top right, rgba(114, 145, 159, 0.12), transparent 22%),
+    linear-gradient(180deg, #f8f2e9 0%, #f1e8d9 44%, #f8f4ed 100%);
+  font-family: "IBM Plex Sans KR", sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+code {
+  padding: 0.15rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(175, 63, 47, 0.1);
+  color: var(--accent-strong);
+}
+
+.shell,
+.auth-shell {
+  width: min(1120px, calc(100% - 24px));
+  margin: 0 auto;
+  padding: 28px 0 48px;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.9fr);
+  gap: 16px;
+  align-items: stretch;
+  margin-bottom: 16px;
+}
+
+.hero-copy,
+.status-card,
+.panel,
+.auth-card,
+.notice {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.hero-copy,
+.auth-card {
+  padding: 28px;
+}
+
+.hero-copy h1,
+.auth-card h1 {
+  margin: 0;
+  font-family: "IBM Plex Serif", serif;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 1.05;
+}
+
+.hero-text,
+.notice p,
+.panel p,
+.auth-card p,
+.status-card p,
+.panel li,
+.facts dd {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+
+.button-primary,
+.secondary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(116, 67, 30, 0.18);
+  white-space: nowrap;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.button-primary {
+  background: var(--accent);
+  color: #fff8f2;
+}
+
+.secondary-link {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--text);
+}
+
+.button-primary:hover,
+.secondary-link:hover {
+  transform: translateY(-1px);
+}
+
+.status-card,
+.panel,
+.notice {
+  padding: 22px;
+}
+
+.wiki-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.logo-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--accent);
+  font-family: "Black Han Sans", sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+}
+
+.wiki-topbar-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.status-card {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.status-label {
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.status-card strong {
+  font-size: 1.25rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.wiki-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.7fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.wiki-sidebar {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.wiki-article-panel {
+  padding: 26px;
+}
+
+.article-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.article-meta-row h2 {
+  margin: 6px 0 0;
+  font-size: 1.5rem;
+}
+
+.compact-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.wiki-content {
+  display: grid;
+  gap: 10px;
+}
+
+.wiki-h2,
+.wiki-h3 {
+  margin: 10px 0 0;
+  font-family: "IBM Plex Serif", serif;
+}
+
+.wiki-h2 {
+  font-size: 1.4rem;
+}
+
+.wiki-h3 {
+  font-size: 1.1rem;
+}
+
+.wiki-paragraph,
+.wiki-quote,
+.wiki-list {
+  margin: 0;
+  line-height: 1.75;
+  color: var(--muted);
+}
+
+.wiki-list {
+  padding-left: 18px;
+}
+
+.wiki-list li + li {
+  margin-top: 6px;
+}
+
+.wiki-link {
+  color: var(--accent-strong);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.12em;
+}
+
+.wiki-quote {
+  padding-left: 14px;
+  border-left: 3px solid rgba(175, 63, 47, 0.28);
+}
+
+.panel h2 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+}
+
+.panel ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.panel li + li {
+  margin-top: 8px;
+}
+
+.facts {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+}
+
+.facts div {
+  display: grid;
+  gap: 4px;
+}
+
+.facts dt {
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.facts dd {
+  margin: 0;
+  color: var(--text);
+}
+
+.notice.error {
+  margin-bottom: 16px;
+  border-color: rgba(175, 63, 47, 0.24);
+}
+
+.empty-copy {
+  margin: 0;
+}
+
+@media (max-width: 860px) {
+  .shell,
+  .auth-shell {
+    width: min(100% - 18px, 100%);
+    padding: 18px 0 28px;
+  }
+
+  .hero,
+  .grid,
+  .wiki-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-copy,
+  .auth-card,
+  .status-card,
+  .panel,
+  .notice {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .hero-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .wiki-topbar,
+  .article-meta-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .button-primary,
+  .secondary-link,
+  .logo-link {
+    width: 100%;
+  }
+}
