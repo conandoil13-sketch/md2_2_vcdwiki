@@ -101,6 +101,17 @@ export async function getWikiPageBySlug(slug: string) {
   return { page, source };
 }
 
+export function buildWikiLinkMap(pages: WikiPage[]) {
+  const entries = new Map<string, string>();
+
+  pages.forEach((page) => {
+    entries.set(page.slug, page.slug);
+    entries.set(page.title, page.slug);
+  });
+
+  return entries;
+}
+
 export function getPageSections(content: string) {
   return content
     .split("\n")

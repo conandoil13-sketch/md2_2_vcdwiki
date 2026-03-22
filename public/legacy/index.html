@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Google Tag Manager -->
+    <script>
+      (function(w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", "GTM-TH92FQH5");
+    </script>
+    <!-- End Google Tag Manager -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-E1FWEL5CSF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-E1FWEL5CSF");
+    </script>
+    <title>국민대학교 시각디자인학과 위키 프로토타입</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+      <iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-TH92FQH5"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+      ></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="topbar-search-row">
+          <div class="topbar-logo" aria-label="시디위키 로고">시디위키</div>
+          <label class="searchbox" for="search-input">
+            <span>문서 찾기</span>
+            <input id="search-input" type="search" placeholder="예: 타이포그래피 스튜디오" />
+            <div id="search-suggestions" class="search-suggestions" hidden></div>
+          </label>
+        </div>
+      </header>
+
+      <div class="utility-bar">
+        <button id="create-page-button" class="ghost-button" type="button">새 문서</button>
+        <button id="browse-pages-button" class="ghost-button" type="button">문서 둘러보기</button>
+        <button id="theme-modal-button" class="ghost-button" type="button">테마 변경</button>
+      </div>
+
+      <div class="content-grid">
+        <aside class="sidebar">
+          <section class="panel recent-panel">
+            <div class="panel-heading">
+              <h2>최근 변경</h2>
+            </div>
+            <ul id="recent-changes" class="recent-list"></ul>
+          </section>
+        </aside>
+
+        <main class="main-column">
+          <section class="hero-card">
+            <div>
+              <p class="hero-label">Visual Design Community Draft</p>
+              <h2 id="hero-title">학과 안의 지식을 함께 쌓는 실험</h2>
+              <p id="hero-description">
+                서버 없이도 문서 구조, 편집 경험, 모바일 대응을 미리 검증할 수 있도록 만든
+                테스트 버전입니다.
+              </p>
+            </div>
+            <div class="hero-meta">
+              <div>
+                <span>현재 문서</span>
+                <strong id="hero-page-name">-</strong>
+              </div>
+              <div>
+                <span>마지막 수정</span>
+                <strong id="hero-updated-at">-</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="wiki-frame">
+            <div class="article-actions">
+              <div class="article-path" id="article-path">문서</div>
+              <div class="action-buttons">
+                <button id="view-mode-button" class="mode-button is-active" type="button">
+                  보기
+                </button>
+                <button id="edit-mode-button" class="mode-button" type="button">편집</button>
+                <button id="preview-mode-button" class="mode-button" type="button">미리보기</button>
+              </div>
+            </div>
+
+            <div class="article-layout">
+              <article class="article-panel">
+                <div id="article-view" class="article-view"></div>
+
+                <section id="editor-panel" class="editor-panel" hidden>
+                  <div class="editor-toolbar" aria-label="편집 매크로">
+                    <button class="macro-button" type="button" data-macro="heading-2">큰 제목</button>
+                    <button class="macro-button" type="button" data-macro="heading-3">작은 제목</button>
+                    <button class="macro-button" type="button" data-macro="bold">굵게</button>
+                    <button class="macro-button" type="button" data-macro="link">문서 링크</button>
+                    <button class="macro-button" type="button" data-macro="list">목록</button>
+                    <button class="macro-button" type="button" data-macro="footnote">주석</button>
+                    <button class="macro-button" type="button" data-macro="image">이미지</button>
+                  </div>
+
+                  <div class="editor-meta">
+                    <label>
+                      문서 제목
+                      <input id="editor-title" type="text" />
+                    </label>
+                    <label>
+                      설명 한 줄
+                      <input id="editor-summary" type="text" />
+                    </label>
+                  </div>
+
+                  <label class="editor-label" for="editor-textarea">문서 본문</label>
+                  <textarea
+                    id="editor-textarea"
+                    spellcheck="false"
+                    placeholder="여기에 문서를 작성하세요."
+                  ></textarea>
+
+                  <div class="editor-actions">
+                    <button id="save-button" class="primary-button" type="button">로컬에 저장</button>
+                    <button id="copy-code-button" class="ghost-button" type="button">
+                      코드형태로 복사
+                    </button>
+                    <button id="cancel-button" class="ghost-button" type="button">취소</button>
+                  </div>
+                  <p id="copy-feedback" class="copy-feedback" aria-live="polite"></p>
+                </section>
+              </article>
+
+              <aside class="toc-panel">
+                <section class="panel">
+                  <div class="panel-heading">
+                    <h2>목차</h2>
+                  </div>
+                  <nav id="toc-list" class="toc-list" aria-label="목차"></nav>
+                </section>
+              </aside>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <!-- 정식 출시 시 이 프로토타입 안내 모달 전체를 삭제하면 됩니다. -->
+    <div id="intro-modal" class="page-browser-modal intro-modal" hidden>
+      <div id="intro-backdrop" class="page-browser-backdrop"></div>
+      <section class="page-browser-sheet" aria-label="프로토타입 안내">
+        <div class="page-browser-header">
+          <div>
+            <p class="eyebrow">Prototype Notice</p>
+            <h2>프로토타입 안내</h2>
+            <p class="page-browser-copy">
+              데이터 원본은 <code>data/wikiData.js</code>에 있습니다. 지금 편집해 저장하면
+              브라우저 로컬 저장소에만 반영되고, 나중에 서버를 만들 때는 가짜 API 부분만 교체하면
+              됩니다.
+            </p>
+          </div>
+          <button id="close-intro-modal-button" class="ghost-button" type="button">확인</button>
+        </div>
+      </section>
+    </div>
+
+    <div id="guideline-modal" class="page-browser-modal intro-modal" hidden>
+      <div id="guideline-backdrop" class="page-browser-backdrop"></div>
+      <section class="page-browser-sheet guideline-sheet" aria-label="핵심 커뮤니티 가이드라인">
+        <div class="page-browser-header guideline-header">
+          <div>
+            <p class="eyebrow">Editing Guide</p>
+            <h2>핵심 커뮤니티 가이드라인</h2>
+            <p class="page-browser-copy">
+              첫 편집 전에 꼭 한 번 읽어주세요. 딱딱한 약관 대신, 필요한 카드만 빠르게 펼쳐볼 수
+              있게 준비했어요.
+            </p>
+          </div>
+          <button id="close-guideline-modal-button" class="ghost-button" type="button" data-analytics-skip="true">
+            닫기
+          </button>
+        </div>
+
+        <div class="guideline-card-list">
+          <section class="guideline-card" data-guideline-card="fact">
+            <button id="guideline-card-fact-button" class="guideline-card-toggle" type="button" aria-expanded="false" data-analytics-skip="true">
+              <span>
+                <strong>사실에 기반해 작성해요</strong>
+                <small>확인된 정보 위주로 쓰고, 소문이나 추측은 적지 않습니다.</small>
+              </span>
+              <span class="guideline-card-icon">+</span>
+            </button>
+            <div class="guideline-card-body" hidden>
+              <p><strong>가능:</strong> “이 수업은 팀플 비중이 높아요.”</p>
+              <p><strong>불가:</strong> “교수님이 누구를 더 편애하는 것 같아요.”</p>
+            </div>
+          </section>
+
+          <section class="guideline-card" data-guideline-card="info">
+            <button id="guideline-card-info-button" class="guideline-card-toggle" type="button" aria-expanded="false" data-analytics-skip="true">
+              <span>
+                <strong>사람보다 정보를 중심으로 써요</strong>
+                <small>비방, 조롱, 저격 대신 학과 생활에 도움이 되는 정보 중심으로 작성합니다.</small>
+              </span>
+              <span class="guideline-card-icon">+</span>
+            </button>
+            <div class="guideline-card-body" hidden>
+              <p><strong>가능:</strong> “과제 피드백 속도가 느린 편입니다.”</p>
+              <p><strong>불가:</strong> “OO은 진짜 최악이고 답이 없어요.”</p>
+            </div>
+          </section>
+
+          <section class="guideline-card" data-guideline-card="privacy">
+            <button id="guideline-card-privacy-button" class="guideline-card-toggle" type="button" aria-expanded="false" data-analytics-skip="true">
+              <span>
+                <strong>사생활과 개인정보는 쓰지 않아요</strong>
+                <small>연애, 외모, 성격, 개인정보 등 민감한 내용은 작성할 수 없습니다.</small>
+              </span>
+              <span class="guideline-card-icon">+</span>
+            </button>
+            <div class="guideline-card-body" hidden>
+              <p><strong>가능:</strong> “기자재 대여 절차는 학과실에 문의해야 합니다.”</p>
+              <p><strong>불가:</strong> “누구 전화번호 / 사적인 관계 / 뒷이야기”</p>
+            </div>
+          </section>
+        </div>
+
+        <div class="guideline-actions">
+          <button id="guideline-full-rules-button" class="ghost-button" type="button" data-analytics-skip="true">
+            전체 규칙 보기
+          </button>
+          <button id="guideline-continue-button" class="primary-button" type="button" data-analytics-skip="true">
+            다음 단계로 이동
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <div id="page-browser-modal" class="page-browser-modal" hidden>
+      <div id="page-browser-backdrop" class="page-browser-backdrop"></div>
+      <section class="page-browser-sheet" aria-label="문서 둘러보기">
+        <div class="page-browser-header">
+          <div>
+            <p class="eyebrow">Browse Archive</p>
+            <h2>문서 둘러보기</h2>
+            <p class="page-browser-copy">
+              타입별로 가볍게 훑어보면서 원하는 문서를 찾을 수 있게 구성했습니다.
+            </p>
+          </div>
+          <button id="close-page-browser-button" class="ghost-button" type="button">닫기</button>
+        </div>
+
+        <div id="page-filter-list" class="page-filter-list" aria-label="문서 타입 필터"></div>
+
+        <div class="page-browser-meta">
+          <span id="page-count-badge" class="badge"></span>
+          <span id="page-filter-label" class="page-filter-label"></span>
+        </div>
+
+        <nav id="page-list" class="page-list" aria-label="문서 목록"></nav>
+      </section>
+    </div>
+
+    <div id="theme-modal" class="page-browser-modal" hidden>
+      <div id="theme-backdrop" class="page-browser-backdrop"></div>
+      <section class="page-browser-sheet" aria-label="테마 변경">
+        <div class="page-browser-header">
+          <div>
+            <p class="eyebrow">Theme Archive</p>
+            <h2>테마 변경</h2>
+            <p class="page-browser-copy">
+              역대 학생회 테마색을 선택해 위키 전체 분위기를 바로 바꿔볼 수 있습니다.
+            </p>
+          </div>
+          <button id="close-theme-modal-button" class="ghost-button" type="button">닫기</button>
+        </div>
+        <div id="theme-selector" class="theme-selector" aria-label="학생회 테마 선택"></div>
+      </section>
+    </div>
+
+    <script src="./data/wikiData.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

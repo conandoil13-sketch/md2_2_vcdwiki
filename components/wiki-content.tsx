@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-function renderInline(text: string) {
+function renderInline(text: string, linkMap: Map<string, string>) {
   const nodes: React.ReactNode[] = [];
   const pattern = /(\[\[([^\]|]+)(?:\|([^\]]+))?\]\]|\[([^\]]+)\]\((https?:\/\/[^\s)]+)\))/g;
   let lastIndex = 0;
@@ -12,7 +12,7 @@ function renderInline(text: string) {
     }
 
     if (match[2]) {
-      const slug = match[2];
+      const slug = linkMap.get(match[2]) ?? match[2];
       const label = match[3] ?? match[2];
       nodes.push(
         <Link key={`${slug}-${match.index}`} href={`/wiki/${encodeURIComponent(slug)}`} className="wiki-link">
@@ -43,7 +43,13 @@ function renderInline(text: string) {
   return nodes;
 }
 
-export function WikiContent({ content }: { content: string }) {
+export function WikiContent({
+  content,
+  linkMap,
+}: {
+  content: string;
+  linkMap: Map<string, string>;
+}) {
   const lines = content.split("\n");
   const blocks: React.ReactNode[] = [];
   let listBuffer: string[] = [];
@@ -56,7 +62,7 @@ export function WikiContent({ content }: { content: string }) {
     blocks.push(
       <ul key={`list-${blocks.length}`} className="wiki-list">
         {listBuffer.map((item, index) => (
-          <li key={`${item}-${index}`}>{renderInline(item)}</li>
+          <li key={`${item}-${index}`}>{renderInline(item, linkMap)}</li>
         ))}
       </ul>
     );
@@ -99,7 +105,7 @@ export function WikiContent({ content }: { content: string }) {
     if (line.startsWith("> ")) {
       blocks.push(
         <blockquote key={`quote-${index}`} className="wiki-quote">
-          {renderInline(line.replace(/^>\s+/, ""))}
+          {renderInline(line.replace(/^>\s+/, ""), linkMap)}
         </blockquote>
       );
       return;
@@ -107,7 +113,7 @@ export function WikiContent({ content }: { content: string }) {
 
     blocks.push(
       <p key={`p-${index}`} className="wiki-paragraph">
-        {renderInline(line)}
+        {renderInline(line, linkMap)}
       </p>
     );
   });

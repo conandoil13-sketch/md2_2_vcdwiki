@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { WikiContent } from "@/components/wiki-content";
-import { getPageSections, getWikiPageBySlug, getWikiPages } from "@/lib/wiki";
+import { buildWikiLinkMap, getPageSections, getWikiPageBySlug, getWikiPages } from "@/lib/wiki";
 
 export default async function WikiPage({
   params,
@@ -19,6 +19,7 @@ export default async function WikiPage({
     .filter((item) => item.category === page.category && item.slug !== page.slug)
     .slice(0, 8);
   const sections = getPageSections(page.content);
+  const linkMap = buildWikiLinkMap(pages);
 
   return (
     <main className="shell">
@@ -49,7 +50,7 @@ export default async function WikiPage({
 
       <section className="wiki-layout">
         <article className="panel wiki-article-panel">
-          <WikiContent content={page.content} />
+          <WikiContent content={page.content} linkMap={linkMap} />
         </article>
 
         <aside className="wiki-sidebar">
