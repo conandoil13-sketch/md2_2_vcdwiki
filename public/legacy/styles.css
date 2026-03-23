@@ -220,6 +220,22 @@ button {
   padding: 14px;
 }
 
+.report-link-copy {
+  margin: 4px 6px 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.report-link-copy a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+.report-link-copy a:hover {
+  color: var(--accent);
+}
+
 .panel-heading,
 .article-actions {
   display: flex;
