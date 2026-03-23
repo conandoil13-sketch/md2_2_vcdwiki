@@ -100,6 +100,7 @@
     editorPanel: document.getElementById("editor-panel"),
     editorTitle: document.getElementById("editor-title"),
     editorSummary: document.getElementById("editor-summary"),
+    editorCategory: document.getElementById("editor-category"),
     editorTextarea: document.getElementById("editor-textarea"),
     searchInput: document.getElementById("search-input"),
     searchSuggestions: document.getElementById("search-suggestions"),
@@ -654,6 +655,7 @@
 
     elements.editorTitle.value = page.title || "";
     elements.editorSummary.value = page.summary || "";
+    elements.editorCategory.value = page.category || "문서";
     elements.editorTextarea.value = page.content || "";
   }
 
@@ -661,13 +663,14 @@
     const existing = getCurrentPage();
     const title = elements.editorTitle.value.trim() || "새 문서";
     const summary = elements.editorSummary.value.trim();
+    const category = elements.editorCategory.value.trim() || "문서";
     const isTemporaryPage = existing?.id && /^new-page-\d+$/.test(existing.id);
 
     return {
       id: existing && existing.id && !isTemporaryPage ? existing.id : slugify(title),
       title,
       summary,
-      category: existing?.category || "문서",
+      category,
       updatedAt: formatDate(new Date()),
       content: elements.editorTextarea.value,
     };

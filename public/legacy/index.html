@@ -106,6 +106,25 @@
                       설명 한 줄
                       <input id="editor-summary" type="text" />
                     </label>
+                    <label>
+                      문서 분류
+                      <input
+                        id="editor-category"
+                        type="text"
+                        list="editor-category-options"
+                        placeholder="예: 수업, 교수진, 학생 활동"
+                      />
+                      <datalist id="editor-category-options">
+                        <option value="문서"></option>
+                        <option value="학과"></option>
+                        <option value="수업"></option>
+                        <option value="교수진"></option>
+                        <option value="학생 활동"></option>
+                        <option value="전시"></option>
+                        <option value="시설"></option>
+                        <option value="제도"></option>
+                      </datalist>
+                    </label>
                   </div>
 
                   <label class="editor-label" for="editor-textarea">문서 본문</label>
