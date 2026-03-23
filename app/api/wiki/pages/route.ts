@@ -31,10 +31,19 @@ function normalizeLegacyPage(page: {
 export async function GET() {
   const { pages, source } = await getWikiPages();
 
-  return NextResponse.json({
-    source,
-    pages: pages.map(normalizeLegacyPage),
-  });
+  return NextResponse.json(
+    {
+      source,
+      pages: pages.map(normalizeLegacyPage),
+    },
+    {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+    }
+  );
 }
 
 export async function POST(request: Request) {

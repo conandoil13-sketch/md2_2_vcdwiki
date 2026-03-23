@@ -160,6 +160,7 @@
       try {
         const response = await fetch("/api/wiki/pages", {
           credentials: "include",
+          cache: "no-store",
         });
         const payload = await response.json();
 
