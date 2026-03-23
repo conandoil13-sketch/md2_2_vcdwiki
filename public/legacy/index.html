@@ -16,7 +16,15 @@
     <div class="app-shell">
       <header class="topbar">
         <div class="topbar-search-row">
-          <div class="topbar-logo" aria-label="시디위키 로고">시디위키</div>
+          <div
+            id="topbar-logo"
+            class="topbar-logo"
+            aria-label="시디위키 로고"
+            role="button"
+            tabindex="0"
+          >
+            시디위키
+          </div>
           <label class="searchbox" for="search-input">
             <span>문서 찾기</span>
             <input id="search-input" type="search" placeholder="예: 타이포그래피 스튜디오" />
@@ -37,6 +45,9 @@
           <section class="panel recent-panel">
             <div class="panel-heading">
               <h2>최근 변경</h2>
+              <button id="all-recent-changes-button" class="ghost-button utility-inline-button" type="button" hidden>
+                최근 수정사항 모두 보기
+              </button>
             </div>
             <ul id="recent-changes" class="recent-list"></ul>
           </section>
@@ -299,6 +310,25 @@
             <div class="empty-state">왼쪽에서 버전을 선택하면 내용이 보입니다.</div>
           </div>
         </div>
+      </section>
+    </div>
+
+    <div id="all-recent-changes-modal" class="page-browser-modal" hidden>
+      <div id="all-recent-changes-backdrop" class="page-browser-backdrop"></div>
+      <section class="page-browser-sheet recent-history-sheet" aria-label="최근 수정사항 전체 보기">
+        <div class="page-browser-header">
+          <div>
+            <p class="eyebrow">Recent Changes Archive</p>
+            <h2>최근 수정사항 모두 보기</h2>
+            <p class="page-browser-copy">
+              관리자 전용으로 최근 수정된 문서를 페이지 단위로 확인할 수 있습니다.
+            </p>
+          </div>
+          <button id="close-all-recent-changes-button" class="ghost-button" type="button">닫기</button>
+        </div>
+
+        <div id="all-recent-changes-list" class="all-recent-changes-list"></div>
+        <div id="all-recent-changes-pagination" class="pagination-bar"></div>
       </section>
     </div>
 

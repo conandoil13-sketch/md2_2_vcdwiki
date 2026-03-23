@@ -90,12 +90,20 @@
     revisions: [],
     selectedRevisionId: null,
     isRevisionsModalOpen: false,
+    isAllRecentChangesModalOpen: false,
+    allRecentChangesPage: 1,
   };
 
   const elements = {
     pageList: document.getElementById("page-list"),
     pageCountBadge: document.getElementById("page-count-badge"),
     recentChanges: document.getElementById("recent-changes"),
+    allRecentChangesButton: document.getElementById("all-recent-changes-button"),
+    allRecentChangesModal: document.getElementById("all-recent-changes-modal"),
+    allRecentChangesBackdrop: document.getElementById("all-recent-changes-backdrop"),
+    closeAllRecentChangesButton: document.getElementById("close-all-recent-changes-button"),
+    allRecentChangesList: document.getElementById("all-recent-changes-list"),
+    allRecentChangesPagination: document.getElementById("all-recent-changes-pagination"),
     articleView: document.getElementById("article-view"),
     editorPanel: document.getElementById("editor-panel"),
     editorTitle: document.getElementById("editor-title"),
@@ -153,6 +161,7 @@
     themeSelector: document.getElementById("theme-selector"),
     macroButtons: Array.from(document.querySelectorAll(".macro-button")),
     topbar: document.querySelector(".topbar"),
+    topbarLogo: document.getElementById("topbar-logo"),
   };
 
   const wikiApi = {
@@ -330,6 +339,9 @@
     elements.revisionsButton.addEventListener("click", openRevisionsModal);
     elements.closeRevisionsModalButton.addEventListener("click", closeRevisionsModal);
     elements.revisionsBackdrop.addEventListener("click", closeRevisionsModal);
+    elements.allRecentChangesButton.addEventListener("click", openAllRecentChangesModal);
+    elements.closeAllRecentChangesButton.addEventListener("click", closeAllRecentChangesModal);
+    elements.allRecentChangesBackdrop.addEventListener("click", closeAllRecentChangesModal);
     elements.closeIntroModalButton.addEventListener("click", closeIntroModal);
     elements.introBackdrop.addEventListener("click", closeIntroModal);
     elements.closeGuidelineModalButton.addEventListener("click", closeGuidelineModal);
@@ -340,6 +352,13 @@
     elements.themeBackdrop.addEventListener("click", closeThemeModal);
     elements.authButton.addEventListener("click", handleAuthButtonClick);
     elements.lockButton.addEventListener("click", toggleCurrentPageLock);
+    elements.topbarLogo.addEventListener("click", goToHomepage);
+    elements.topbarLogo.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        goToHomepage();
+      }
+    });
 
     elements.createPageButton.addEventListener("click", () => startEditFlow("create"));
 
@@ -398,6 +417,8 @@
     syncModeButtons();
     syncEditorPermissions();
     syncAuthButton();
+    syncAllRecentChangesButton();
+    syncAllRecentChangesModal();
     syncRevisionsModal();
     syncLockButton();
   }
@@ -517,9 +538,7 @@
   }
 
   function renderRecentChanges() {
-    const pages = [...state.pages]
-      .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)))
-      .slice(0, 5);
+    const pages = getSortedRecentPages().slice(0, 5);
 
     elements.recentChanges.innerHTML = "";
 
@@ -542,6 +561,14 @@
       item.appendChild(button);
       elements.recentChanges.appendChild(item);
     });
+  }
+
+  function getSortedRecentPages() {
+    return [...state.pages].sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+  }
+
+  function syncAllRecentChangesButton() {
+    elements.allRecentChangesButton.hidden = !state.viewer.isAdmin;
   }
 
   function renderCurrentPage() {
@@ -818,9 +845,11 @@
     state.isThemeModalOpen = true;
     state.isPageBrowserOpen = false;
     state.isRevisionsModalOpen = false;
+    state.isAllRecentChangesModalOpen = false;
     syncThemeModal();
     syncPageBrowser();
     syncRevisionsModal();
+    syncAllRecentChangesModal();
   }
 
   function closeThemeModal() {
@@ -849,11 +878,13 @@
 
     state.isPageBrowserOpen = false;
     state.isThemeModalOpen = false;
+    state.isAllRecentChangesModalOpen = false;
     state.isRevisionsModalOpen = true;
     state.revisions = [];
     state.selectedRevisionId = null;
     syncPageBrowser();
     syncThemeModal();
+    syncAllRecentChangesModal();
     syncRevisionsModal();
 
     elements.revisionsList.innerHTML = '<div class="empty-state">수정 기록을 불러오는 중입니다.</div>';
@@ -880,6 +911,106 @@
   function syncRevisionsModal() {
     elements.revisionsModal.hidden = !state.isRevisionsModalOpen;
     document.body.style.overflow = shouldLockBodyScroll() ? "hidden" : "";
+  }
+
+  function openAllRecentChangesModal() {
+    if (!state.viewer.isAdmin) {
+      return;
+    }
+
+    state.isPageBrowserOpen = false;
+    state.isThemeModalOpen = false;
+    state.isRevisionsModalOpen = false;
+    state.isAllRecentChangesModalOpen = true;
+    state.allRecentChangesPage = 1;
+    syncPageBrowser();
+    syncThemeModal();
+    syncRevisionsModal();
+    syncAllRecentChangesModal();
+    renderAllRecentChanges();
+  }
+
+  function closeAllRecentChangesModal() {
+    state.isAllRecentChangesModalOpen = false;
+    syncAllRecentChangesModal();
+  }
+
+  function syncAllRecentChangesModal() {
+    elements.allRecentChangesModal.hidden = !state.isAllRecentChangesModalOpen;
+    document.body.style.overflow = shouldLockBodyScroll() ? "hidden" : "";
+  }
+
+  function renderAllRecentChanges() {
+    const pageSize = 12;
+    const sortedPages = getSortedRecentPages();
+    const totalPages = Math.max(1, Math.ceil(sortedPages.length / pageSize));
+    state.allRecentChangesPage = Math.min(Math.max(1, state.allRecentChangesPage), totalPages);
+
+    const startIndex = (state.allRecentChangesPage - 1) * pageSize;
+    const pagedItems = sortedPages.slice(startIndex, startIndex + pageSize);
+
+    elements.allRecentChangesList.innerHTML = "";
+    elements.allRecentChangesPagination.innerHTML = "";
+
+    if (!pagedItems.length) {
+      elements.allRecentChangesList.innerHTML =
+        '<div class="empty-state">표시할 최근 수정 문서가 없습니다.</div>';
+      return;
+    }
+
+    pagedItems.forEach((page) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "recent-archive-item";
+      button.innerHTML = `
+        <strong>${escapeHtml(page.title)}</strong>
+        <small>${escapeHtml(page.category || "문서")} · ${escapeHtml(page.updatedAt || "-")}</small>
+        <span>${escapeHtml(page.summary || "요약이 아직 없습니다.")}</span>
+      `;
+      button.addEventListener("click", () => {
+        state.currentPageId = page.id;
+        closeAllRecentChangesModal();
+        setMode("view");
+        renderApp();
+        syncUrlWithCurrentPage();
+        scrollToTop();
+      });
+      elements.allRecentChangesList.appendChild(button);
+    });
+
+    const prevButton = document.createElement("button");
+    prevButton.type = "button";
+    prevButton.className = "pagination-button";
+    prevButton.textContent = "이전";
+    prevButton.disabled = state.allRecentChangesPage === 1;
+    prevButton.addEventListener("click", () => {
+      state.allRecentChangesPage -= 1;
+      renderAllRecentChanges();
+    });
+    elements.allRecentChangesPagination.appendChild(prevButton);
+
+    for (let pageNumber = 1; pageNumber <= totalPages; pageNumber += 1) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `pagination-button${pageNumber === state.allRecentChangesPage ? " is-active" : ""}`;
+      button.textContent = String(pageNumber);
+      button.addEventListener("click", () => {
+        state.allRecentChangesPage = pageNumber;
+        renderAllRecentChanges();
+      });
+      elements.allRecentChangesPagination.appendChild(button);
+    }
+
+    const nextButton = document.createElement("button");
+    nextButton.type = "button";
+    nextButton.className = "pagination-button";
+    nextButton.textContent = "다음";
+    nextButton.disabled = state.allRecentChangesPage === totalPages;
+    nextButton.addEventListener("click", () => {
+      state.allRecentChangesPage += 1;
+      renderAllRecentChanges();
+    });
+    elements.allRecentChangesPagination.appendChild(nextButton);
   }
 
   function closeIntroModal() {
@@ -941,6 +1072,7 @@
     return (
       state.isPageBrowserOpen ||
       state.isRevisionsModalOpen ||
+      state.isAllRecentChangesModalOpen ||
       state.isThemeModalOpen ||
       state.isIntroModalOpen ||
       state.isGuidelineModalOpen
@@ -949,6 +1081,23 @@
 
   function scrollToTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function goToHomepage() {
+    const homepage = window.WIKI_SEED_DATA.homepage;
+    if (!homepage) {
+      return;
+    }
+
+    state.currentPageId = homepage;
+    state.showSuggestions = false;
+    state.searchTerm = "";
+    elements.searchInput.value = "";
+    elements.searchSuggestions.hidden = true;
+    setMode("view");
+    renderApp();
+    syncUrlWithCurrentPage();
+    scrollToTop();
   }
 
   function getPageIdFromHash() {
