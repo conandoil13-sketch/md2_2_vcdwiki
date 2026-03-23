@@ -554,14 +554,15 @@
       return;
     }
 
-    elements.heroPageName.textContent = page.title;
-    elements.heroUpdatedAt.textContent = page.updatedAt || "-";
-    elements.heroTitle.textContent = page.title;
-    elements.heroDescription.textContent = page.summary || "문서 설명이 아직 없습니다.";
-    elements.articlePath.textContent = `${page.category || "문서"} / ${page.title}`;
-    elements.revisionsCopy.textContent = `${page.title} 문서의 수정 버전과 편집 기록을 볼 수 있습니다.`;
+    const displayPage = state.mode === "preview" ? buildPageFromEditor() : page;
 
-    fillEditor(page);
+    elements.heroPageName.textContent = displayPage.title;
+    elements.heroUpdatedAt.textContent = displayPage.updatedAt || "-";
+    elements.heroTitle.textContent = displayPage.title;
+    elements.heroDescription.textContent =
+      displayPage.summary || "문서 설명이 아직 없습니다.";
+    elements.articlePath.textContent = `${displayPage.category || "문서"} / ${displayPage.title}`;
+    elements.revisionsCopy.textContent = `${page.title} 문서의 수정 버전과 편집 기록을 볼 수 있습니다.`;
 
     if (state.mode === "view") {
       elements.articleView.hidden = false;
@@ -922,6 +923,7 @@
       return;
     }
 
+    fillEditor(getCurrentPage());
     setMode("edit");
   }
 
@@ -991,6 +993,7 @@
       return;
     }
 
+    fillEditor(getCurrentPage());
     setMode("edit");
   }
 
